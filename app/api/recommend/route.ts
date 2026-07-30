@@ -3,95 +3,94 @@ import { NextResponse } from 'next/server';
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { schoolGrade, ielts, majors, fundingTypes, degrees } = body;
+    const { schoolGrade, ielts, majors, fundingTypes, selectedCountries, degrees } = body;
 
-    const selectedMajor = majors && majors.length > 0 ? majors[0] : 'IT va Kompyuter fanlari';
-    const selectedFunding = fundingTypes && fundingTypes.length > 0 ? fundingTypes[0] : "To'liq Grant";
-    const selectedDegree = degrees && degrees.length > 0 ? degrees[0] : 'Bakalavr';
-
-    // Standart / Zaxira (Fallback) Natijalar - API key bo'lmasa ham muammosiz ishlaydi
-    const fallbackRecommendations = [
+    const major = majors && majors.length > 0 ? majors[0] : 'IT va Kompyuter fanlari';
+    const funding = fundingTypes && fundingTypes.length > 0 ? fundingTypes[0] : "To'liq moliyalash";
+    const degree = degrees && degrees.length > 0 ? degrees[0] : 'Bakalavr';
+    
+    // Universitetlar bazasi (Dinamik tanlov uchun)
+    const database = [
       {
-        universityName: 'KAIST (Korea Advanced Institute of Science and Technology)',
-        country: 'Janubiy Koreya',
-        category: 'Reach',
-        matchPercentage: 88,
-        fundingType: selectedFunding,
-        degree: selectedDegree,
-        reason: `${selectedMajor} sohasi bo'yicha dunyodagi eng kuchli universitetlardan biri. IELTS ${ielts || '7.0'} va a'lo baholar bilan 100% tuition waiver (oqish pulidan ozod) hamda oylik stipendiya olish imkoniyati yuqori.`
+        name: "MIT (Massachusetts Institute of Technology)",
+        country: "AQSH",
+        image: "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=800&q=80",
+        match: 85,
+        cat: "Reach",
+        desc: `${major} yo'nalishida dunyoda #1-o'rin. Need-blind va 100% moliyaviy yordam mavjud.`
       },
       {
-        universityName: 'Technical University of Munich (TUM)',
-        country: 'Germaniya',
-        category: 'Match',
-        matchPercentage: 92,
-        fundingType: "Bepul ta'lim",
-        degree: selectedDegree,
-        reason: `Germaniyada davlat universitetlarida o'qish bepul. ${selectedMajor} yo'nalishida Yevropada yetakchi. Bahoyingiz (${schoolGrade || '5'}) va IELTS ballingiz mos keladi.`
+        name: "Technical University of Munich (TUM)",
+        country: "Germaniya",
+        image: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=800&q=80",
+        match: 94,
+        cat: "Match",
+        desc: `Germaniyada bepul ta'lim. ${major} sohasi bo'yicha Yevropadagi yetakchi oliygoh. IELTS ${ielts || '7.0'} mos keladi.`
       },
       {
-        universityName: 'University of Debrecen (Stipendium Hungaricum)',
-        country: 'Vengriya',
-        category: 'Safety',
-        matchPercentage: 96,
-        fundingType: "To'liq Grant (Stipendium)",
-        degree: selectedDegree,
-        reason: `Stipendium Hungaricum dasturi orqali fully-funded (oqish, turar joy va oylik stipendiya) sharoitga ega bo'lish uchun ideal variant.`
+        name: "KAIST",
+        country: "Janubiy Koreya",
+        image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=800&q=80",
+        match: 90,
+        cat: "Match",
+        desc: `Koreya Hukumat Granti va KAIST Scholarship orqali 100% o'qish va oylik stipendiya taqdim etiladi.`
+      },
+      {
+        name: "University of Oxford",
+        country: "Buyuk Britaniya",
+        image: "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?auto=format&fit=crop&w=800&q=80",
+        match: 82,
+        cat: "Reach",
+        desc: "Clarendon va Reach Oxford grantlari orqali to'liq moliyalashtiriladigan dasturlar."
+      },
+      {
+        name: "University of Debrecen",
+        country: "Vengriya",
+        image: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=800&q=80",
+        match: 97,
+        cat: "Safety",
+        desc: "Stipendium Hungaricum to'liq granti orqali bepul o'qish va turar joy imkoniyati."
+      },
+      {
+        name: "University of Tokyo",
+        country: "Yaponiya",
+        image: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=800&q=80",
+        match: 88,
+        cat: "Match",
+        desc: "MEXT Yapon Hukumat Granti orqali barcha xarajatlar qoplanadi."
+      },
+      {
+        name: "University of Toronto",
+        country: "Kanada",
+        image: "https://images.unsplash.com/photo-1564981797816-1043664bf78d?auto=format&fit=crop&w=800&q=80",
+        match: 89,
+        cat: "Reach",
+        desc: "Lester B. Pearson to'liq xalqaro granti taqdim etiladi."
       }
     ];
 
-    // Agar OpenAI/Gemini API key ulangan bo'lsa, AI'ga so'rov yuboramiz
-    const apiKey = process.env.OPENAI_API_KEY;
-
-    if (apiKey) {
-      try {
-        const prompt = `Foydalanuvchi ma'lumotlari:
-- Maktab bahosi: ${schoolGrade}
-- IELTS: ${ielts}
-- Tanlagan sohasi: ${selectedMajor}
-- Daraja: ${selectedDegree}
-- Moliyalashtirish turi: ${selectedFunding}
-
-Ushbu foydalanuvchiga mos keladigan 3 ta chet el universitetini va ularning grantlarini tavsiya qil.
-Javobni FAQAT QUYIDAGI JSON FORMATIDA QAYTAR (boshqa hech qanday matn yozma):
-[
-  {
-    "universityName": "Universitet nomi",
-    "country": "Davlat nomi",
-    "category": "Reach" yoki "Match" yoki "Safety",
-    "matchPercentage": 90,
-    "fundingType": "Grant turi",
-    "reason": "Nega mos kelishi haqida qisqa izoh"
-  }
-]`;
-
-        const aiRes = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
-          },
-          body: JSON.stringify({
-            model: 'gpt-3.5-turbo',
-            messages: [{ role: 'user', content: prompt }],
-            temperature: 0.7
-          })
-        });
-
-        const aiData = await aiRes.json();
-        const content = aiData.choices?.[0]?.message?.content;
-
-        if (content) {
-          const parsed = JSON.parse(content);
-          return NextResponse.json({ recommendations: parsed });
-        }
-      } catch (aiErr) {
-        console.warn('AI API error, fallback data used:', aiErr);
-      }
+    // Tanlangan davlatlarga ko'ra filterlash
+    let filtered = database;
+    if (selectedCountries && !selectedCountries.includes('Barcha davlatlar')) {
+      filtered = database.filter(u => selectedCountries.includes(u.country));
     }
 
-    // AI API sozlanmagan bo'lsa zaxira ma'lumotlarni qaytaradi
-    return NextResponse.json({ recommendations: fallbackRecommendations });
+    if (filtered.length === 0) {
+      filtered = database.slice(0, 3);
+    }
+
+    const recommendations = filtered.map(u => ({
+      universityName: u.name,
+      country: u.country,
+      image: u.image,
+      category: u.cat,
+      matchPercentage: u.match,
+      fundingType: funding,
+      degree: degree,
+      reason: u.desc
+    }));
+
+    return NextResponse.json({ recommendations });
 
   } catch (err) {
     console.error('API Error:', err);
