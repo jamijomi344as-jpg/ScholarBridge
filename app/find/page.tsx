@@ -2,6 +2,39 @@
 
 import { useState } from 'react';
 
+// Jahon bo'yicha eng mashhur asosiy yo'nalishlar
+const MAJOR_OPTIONS = [
+  'Computer Science & IT',
+  'Software Engineering & AI',
+  'Business Administration & Management',
+  'Economics & Finance',
+  'Data Science & Analytics',
+  'Medicine & Healthcare',
+  'Engineering (Civil, Mechanical, Electrical)',
+  'International Relations & Law',
+  'Marketing & Digital Media',
+  'Graphic Design & Architecture',
+  'Biotechnology & Life Sciences',
+  'Psychology & Social Work'
+];
+
+// Target davlatlar ro'yxati
+const COUNTRY_OPTIONS = [
+  'All Countries (Barcha davlatlar)',
+  'United States (USA)',
+  'United Kingdom (UK)',
+  'Germany',
+  'Turkey',
+  'South Korea',
+  'China',
+  'Canada',
+  'Australia',
+  'Italy',
+  'Japan',
+  'Poland',
+  'Hungary'
+];
+
 export default function FindPage() {
   const [loading, setLoading] = useState(false);
   const [recommendations, setRecommendations] = useState<any[]>([]);
@@ -9,24 +42,50 @@ export default function FindPage() {
   const [searched, setSearched] = useState(false);
 
   // Dinamik forma holati
-  const [form, setForm] = useState({
-    gpa: '',
-    ielts: '',
-    major: '',
-    country: '',
-    budget: '',
-    sat: ''
-  });
+  const [gpa, setGpa] = useState('');
+  const [ielts, setIelts] = useState('');
+  const [sat, setSat] = useState('');
+  const [userCountry, setUserCountry] = useState('Uzbekistan');
+  const [budget, setBudget] = useState('');
+  
+  // Bir nechta tanlash uchun masivlar
+  const [selectedMajors, setSelectedMajors] = useState<string[]>([]);
+  const [selectedTargetCountries, setSelectedTargetCountries] = useState<string[]>(['All Countries (Barcha davlatlar)']);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+  // Yo'nalishlarni tanlash/o'chirish
+  const toggleMajor = (major: string) => {
+    if (selectedMajors.includes(major)) {
+      setSelectedMajors(selectedMajors.filter((m) => m !== major));
+    } else {
+      setSelectedMajors([...selectedMajors, major]);
+    }
+  };
+
+  // Target davlatlarni tanlash/o'chirish
+  const toggleTargetCountry = (country: string) => {
+    if (country === 'All Countries (Barcha davlatlar)') {
+      setSelectedTargetCountries(['All Countries (Barcha davlatlar)']);
+      return;
+    }
+
+    let updated = selectedTargetCountries.filter(c => c !== 'All Countries (Barcha davlatlar)');
+    if (updated.includes(country)) {
+      updated = updated.filter(c => c !== country);
+    } else {
+      updated.push(country);
+    }
+
+    if (updated.length === 0) {
+      updated = ['All Countries (Barcha davlatlar)'];
+    }
+    setSelectedTargetCountries(updated);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!form.gpa || !form.ielts || !form.major || !form.country || !form.budget) {
-      alert('Iltimos, barcha majburiy maydonlarni to\'ldiring.');
+    if (!gpa || !ielts || selectedMajors.length === 0 || !userCountry || !budget) {
+      alert("Iltimos, barcha majburiy maydonlarni to'ldiring hamda kamida bitta yo'nalishni tanlang.");
       return;
     }
 
@@ -40,12 +99,13 @@ export default function FindPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          schoolGrade: form.gpa,
-          ielts: form.ielts,
-          sat: form.sat,
-          majors: [form.major],
-          fundingTypes: [form.budget],
-          selectedCountries: [form.country],
+          schoolGrade: gpa, // 5 ballik baho
+          ielts: ielts,
+          sat: sat,
+          majors: selectedMajors,
+          fundingTypes: [budget],
+          selectedCountries: selectedTargetCountries,
+          userOriginCountry: userCountry,
           degrees: ['Bakalavr']
         }),
       });
@@ -69,7 +129,6 @@ export default function FindPage() {
 
   return (
     <>
-      {/* Google Fonts ulanishi */}
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link
         href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,500&display=swap"
@@ -87,20 +146,20 @@ export default function FindPage() {
             </p>
 
             <form className="fieldset" onSubmit={handleSubmit}>
+              {/* GPA (5 ballik) VA IELTS */}
               <div className="two-col">
                 <div className="field">
-                  <label htmlFor="gpa">GPA</label>
-                  <span className="hint">On a 4.0 scale</span>
+                  <label htmlFor="gpa">GPA (O'rtacha baho)</label>
+                  <span className="hint">5 ballik sistemada (masalan: 4.85)</span>
                   <input
                     type="number"
                     id="gpa"
-                    name="gpa"
-                    placeholder="3.80"
-                    min="0"
+                    placeholder="4.80"
+                    min="1"
                     max="5"
                     step="0.01"
-                    value={form.gpa}
-                    onChange={handleChange}
+                    value={gpa}
+                    onChange={(e) => setGpa(e.target.value)}
                     required
                   />
                 </div>
@@ -110,44 +169,71 @@ export default function FindPage() {
                   <input
                     type="number"
                     id="ielts"
-                    name="ielts"
                     placeholder="7.0"
                     min="0"
                     max="9"
                     step="0.5"
-                    value={form.ielts}
-                    onChange={handleChange}
+                    value={ielts}
+                    onChange={(e) => setIelts(e.target.value)}
                     required
                   />
                 </div>
               </div>
 
+              {/* YO'NALISH TANLASH (MULTI-SELECT PILLS) */}
               <div className="field">
-                <label htmlFor="major">Intended Major</label>
-                <input
-                  type="text"
-                  id="major"
-                  name="major"
-                  placeholder="e.g. Computer Science, Economics, Medicine…"
-                  value={form.major}
-                  onChange={handleChange}
-                  required
-                />
+                <label>Intended Major(s)</label>
+                <span className="hint">Bir nechta yo'nalishni tanlashingiz mumkin:</span>
+                <div className="pills-container">
+                  {MAJOR_OPTIONS.map((major) => {
+                    const isSelected = selectedMajors.includes(major);
+                    return (
+                      <button
+                        type="button"
+                        key={major}
+                        className={`pill-btn ${isSelected ? 'active' : ''}`}
+                        onClick={() => toggleMajor(major)}
+                      >
+                        {isSelected ? '✓ ' : '+ '}
+                        {major}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
+              {/* TARGET DAVLATLARNI TANLASH (MULTI-SELECT PILLS) */}
               <div className="field">
-                <label htmlFor="country">Your Country</label>
+                <label>Target Countries (Grant kutilayotgan davlatlar)</label>
+                <span className="hint">Qaysi davlatlardan universitet va grant qidirilsin?</span>
+                <div className="pills-container">
+                  {COUNTRY_OPTIONS.map((country) => {
+                    const isSelected = selectedTargetCountries.includes(country);
+                    return (
+                      <button
+                        type="button"
+                        key={country}
+                        className={`pill-btn ${isSelected ? 'active' : ''}`}
+                        onClick={() => toggleTargetCountry(country)}
+                      >
+                        {isSelected ? '✓ ' : '+ '}
+                        {country}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* USER NATIVE COUNTRY */}
+              <div className="field">
+                <label htmlFor="userCountry">Your Country of Residence</label>
                 <div className="select-wrap">
                   <select
-                    id="country"
-                    name="country"
-                    value={form.country}
-                    onChange={handleChange}
+                    id="userCountry"
+                    value={userCountry}
+                    onChange={(e) => setUserCountry(e.target.value)}
                     required
                   >
-                    <option value="" disabled>
-                      Select your country
-                    </option>
                     <option value="Uzbekistan">Uzbekistan</option>
                     <option value="Kazakhstan">Kazakhstan</option>
                     <option value="Kyrgyzstan">Kyrgyzstan</option>
@@ -155,35 +241,33 @@ export default function FindPage() {
                     <option value="Turkmenistan">Turkmenistan</option>
                     <option value="Azerbaijan">Azerbaijan</option>
                     <option value="Turkey">Turkey</option>
-                    <option value="Pakistan">Pakistan</option>
-                    <option value="India">India</option>
-                    <option value="China">China</option>
                     <option value="Other">Other</option>
                   </select>
                 </div>
               </div>
 
+              {/* SCHOLARSHIP NEED */}
               <div className="field">
                 <label htmlFor="budget">Scholarship Need</label>
                 <div className="select-wrap">
                   <select
                     id="budget"
-                    name="budget"
-                    value={form.budget}
-                    onChange={handleChange}
+                    value={budget}
+                    onChange={(e) => setBudget(e.target.value)}
                     required
                   >
                     <option value="" disabled>
                       Select your budget need
                     </option>
-                    <option value="Full scholarship only">Full scholarship only</option>
-                    <option value="Partial scholarship">Partial scholarship (can pay some)</option>
-                    <option value="Any funding helps">Any funding helps</option>
-                    <option value="Self-funded">Self-funded (no scholarship needed)</option>
+                    <option value="Full scholarship only">Full scholarship only (To'liq grant)</option>
+                    <option value="Partial scholarship">Partial scholarship (Qisman grant)</option>
+                    <option value="Any funding helps">Any funding helps (Har qanday moliya yordami)</option>
+                    <option value="Self-funded">Self-funded (O'z hisobidan)</option>
                   </select>
                 </div>
               </div>
 
+              {/* SAT SCORE */}
               <div className="field">
                 <label htmlFor="sat">
                   SAT Score <span style={{ fontWeight: 400, color: 'var(--ink-soft)' }}>(optional)</span>
@@ -191,15 +275,15 @@ export default function FindPage() {
                 <input
                   type="number"
                   id="sat"
-                  name="sat"
                   placeholder="e.g. 1450"
                   min="400"
                   max="1600"
-                  value={form.sat}
-                  onChange={handleChange}
+                  value={sat}
+                  onChange={(e) => setSat(e.target.value)}
                 />
               </div>
 
+              {/* SUBMIT BUTTON */}
               <button className="btn-submit" type="submit" disabled={loading}>
                 {!loading ? (
                   <>
@@ -216,16 +300,7 @@ export default function FindPage() {
                   </>
                 ) : (
                   <>
-                    <div
-                      style={{
-                        width: '18px',
-                        height: '18px',
-                        border: '2px solid rgba(246,244,236,0.3)',
-                        borderTopColor: '#F6F4EC',
-                        borderRadius: '50%',
-                        animation: 'spin 0.9s linear infinite',
-                      }}
-                    />
+                    <div className="btn-spinner" />
                     Analyzing…
                   </>
                 )}
@@ -247,7 +322,6 @@ export default function FindPage() {
                 </span>
               </div>
 
-              {/* Dastlabki holat */}
               {!searched && !loading && (
                 <div className="rp-empty">
                   <div className="icon">?</div>
@@ -255,22 +329,19 @@ export default function FindPage() {
                 </div>
               )}
 
-              {/* Yuklanish holati */}
               {loading && (
                 <div className="rp-loading" style={{ display: 'flex' }}>
                   <div className="spinner"></div>
-                  <p>Analyzing your profile…</p>
+                  <p>Analyzing your profile & scholarship matching…</p>
                 </div>
               )}
 
-              {/* Xatolik holati */}
               {!loading && errorMsg && (
                 <div className="rp-error" style={{ display: 'flex' }}>
                   <p>⚠️ {errorMsg}</p>
                 </div>
               )}
 
-              {/* Natijalar ko'rinishi */}
               {!loading && searched && !errorMsg && (
                 <div className="rp-results" style={{ display: 'flex' }}>
                   {recommendations.length === 0 ? (
@@ -293,6 +364,9 @@ export default function FindPage() {
                             <div className="uni-name">{u.universityName || u.name}</div>
                             <span className={`badge ${category}`}>{category}</span>
                           </div>
+                          <p style={{ fontSize: '0.78rem', color: 'var(--gold-light)', marginBottom: '4px' }}>
+                            📍 {u.country || 'International'}
+                          </p>
                           <div className="uni-detail">
                             {u.reason || u.description || 'Fits your academic and funding requirements.'}
                           </div>
@@ -322,7 +396,6 @@ export default function FindPage() {
         </div>
       </div>
 
-      {/* CSS Stillar */}
       <style jsx global>{`
         :root {
           --navy: #16233f;
@@ -455,8 +528,33 @@ export default function FindPage() {
           box-shadow: 0 0 0 3px rgba(22, 35, 63, 0.1);
         }
 
-        .field input::placeholder {
-          color: #b0ac9e;
+        .pills-container {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+          margin-top: 4px;
+        }
+
+        .pill-btn {
+          background: white;
+          border: 1.5px solid var(--rule);
+          color: var(--ink);
+          padding: 7px 12px;
+          border-radius: 20px;
+          font-size: 0.82rem;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.15s ease;
+        }
+
+        .pill-btn:hover {
+          border-color: var(--navy);
+        }
+
+        .pill-btn.active {
+          background: var(--navy);
+          color: white;
+          border-color: var(--navy);
         }
 
         .select-wrap {
@@ -524,7 +622,15 @@ export default function FindPage() {
           height: 18px;
         }
 
-        /* Result Panel */
+        .btn-spinner {
+          width: 18px;
+          height: 18px;
+          border: 2px solid rgba(246, 244, 236, 0.3);
+          border-top-color: #f6f4ec;
+          border-radius: 50%;
+          animation: spin 0.9s linear infinite;
+        }
+
         .result-side {
           position: sticky;
           top: 40px;
@@ -535,7 +641,7 @@ export default function FindPage() {
           border-radius: 6px;
           padding: 28px 26px 24px;
           position: relative;
-          min-height: 380px;
+          min-height: 420px;
           display: flex;
           flex-direction: column;
         }
@@ -642,7 +748,7 @@ export default function FindPage() {
           display: flex;
           flex-direction: column;
           gap: 14px;
-          max-height: 520px;
+          max-height: 540px;
           overflow-y: auto;
         }
 
@@ -658,7 +764,7 @@ export default function FindPage() {
           justify-content: space-between;
           align-items: flex-start;
           gap: 10px;
-          margin-bottom: 6px;
+          margin-bottom: 4px;
         }
 
         .uni-name {
