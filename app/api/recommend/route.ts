@@ -7,43 +7,45 @@ export async function POST(req: Request) {
 
     const apiKey = process.env.OPENAI_API_KEY;
 
-    // Agar OpenAI API Key o'rnatilmagan bo'lsa, xatolik qaytarish yoki fallback ishlatish
     if (!apiKey) {
       return NextResponse.json(
-        { error: "OpenAI API kaliti .env.local faylida topilmadi!" },
+        { error: "OPENAI_API_KEY muhit o'zgaruvchisi o'rnatilmagan!" },
         { status: 500 }
       );
     }
 
     const prompt = `
-Siz xalqaro universitetlar va grantlar bo'yicha ekspert AI assistentisiz. 
-Foydalanuvchi profil ma'lumotlari:
+Siz oliy ta'lim va xalqaro grantlar bo'yicha dunyodagi eng tajribali AI analitiksiz.
+Sizda dunyoning top-1000 universitetlari va unga o'rtacha kirgan talabalarning statistikasi (GPA, SAT, IELTS, acceptance rate) bo'yicha to'liq bilim mavjud.
+
+FOYDALANUVCHI PROFILI:
 - Ta'lim darajasi: ${degrees ? degrees.join(', ') : 'Bakalavr'}
-- Yo'nalishi / Soha: ${majors ? majors.join(', ') : 'IT'}
-- Maktab/Kollej bahosi: ${schoolGrade} (5 ballik tizimda)
-- IELTS bali: ${ielts || 'Topshirilmagan'}
-- SAT bali: ${sat || 'Topshirilmagan'}
-- Qiziqqan mamlakatlari: ${selectedCountries ? selectedCountries.join(', ') : 'Barcha davlatlar'}
-- Moliyalashtirish turi: ${fundingTypes ? fundingTypes.join(', ') : "To'liq moliyalash"}
+- Qiziqqan sohasi: ${majors ? majors.join(', ') : 'Kompyuter fanlari va IT'}
+- Maktab/Kollej bahosi (GPA): ${schoolGrade} / 5.0
+- IELTS bali: ${ielts || 'Yo\'q'}
+- SAT bali: ${sat || 'Yo\'q'}
+- Tanlagan davlatlari: ${selectedCountries ? selectedCountries.join(', ') : 'Barcha davlatlar'}
+- Qidirayotgan moliyalashtirish turi: ${fundingTypes ? fundingTypes.join(', ') : 'To\'liq moliyalash'}
 
-VAZIPA:
-Ushbu foydalanuvchining REAL imkoniyatlarini xolis va qat'iy baholang.
-Misol uchun: MIT, Harvard kabi top-10 universitetlarga IELTS 7.0 va SAT 1350 bilan kirish imkoniyati 85% bo'la olmaydi (maksimum 15-20% bo'lishi mumkin). SAT 1350 top universitetlar uchun past ko'rsatkich. 
+SINOV VA MANTIQLIY TAHLIL QOIDALARI:
+1. Ushbu profilni dunyodagi top 1000 ta universitetlarning o'rtacha qabul qilingan talabalari ko'rsatkichlari bilan solishtiring.
+2. FAQAT VA FAQAT kirish ehtimoli (matchPercentage) 50% yoki undan YUQORI bo'lgan universitet va grant dasturlarini tanlang!
+3. Agar top universitetlarga (masalan MIT, Oxford, Harvard) bu ko'rsatkich yetmasa, ularni UMUMAN ro'yxatga kiritmang (chunki ularga imkoniyat 50% dan past).
+4. Saralash natijalarini 'matchPercentage' bo'yicha ENG YUQORI FOIZDAN ENG PAST FOIZGA qarab tartiblang (Descending order, masalan: 95%, 88%, 72%, 55%).
+5. Kamida 4 ta, maksimal 8 ta mos universitet va grantni qaytaring.
 
-Iltimos, foydalanuvchi tanlagan kriteriyalarga mos keladigan 4 ta REAL universitet va grant dasturini tanlang va har biri uchun quyidagi JSON formatida aniq tahlil qaytaring. Response FAQAT toza JSON formatida bo'lsin, boshqa hech qanday ortiqcha tekst yozmang!
-
-JSON Formati:
+JAVOB FORMATI (Strictly valid JSON):
 {
   "recommendations": [
     {
-      "universityName": "Universitet nomi",
-      "country": "Mamlakat",
+      "universityName": "Universitet nomi va rasmiy nomi",
+      "country": "Davlat",
       "image": "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=800&q=80",
-      "category": "Reach" | "Match" | "Safety",
-      "matchPercentage": 35,
-      "fundingType": "To'liq moliyalash / Qisman / ...",
+      "category": "Match" yoki "Safety",
+      "matchPercentage": 92,
+      "fundingType": "To'liq moliyalash",
       "degree": "Bakalavr",
-      "reason": "Nima uchun ushbu ko'rsatkich berilganligi va foydalanuvchi nimani oshirishi kerakligi haqida qisqa real ekspert xulosasi."
+      "reason": "Ushbu talabaning IELTS/SAT/GPA ko'rsatkichi nima uchun aynan shu universitet profiliga 50%+ mos kelishi haqida aniq tahliliy xulosa."
     }
   ]
 }
@@ -58,18 +60,17 @@ JSON Formati:
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: [{ role: 'user', content: prompt }],
-        temperature: 0.3,
+        temperature: 0.2,
       }),
     });
 
     const aiData = await response.json();
     
     if (!aiData.choices || aiData.choices.length === 0) {
-      throw new Error("AI dan javob olishda xatolik");
+      throw new Error("AI tahlilida xatolik yuz berdi");
     }
 
     let rawContent = aiData.choices[0].message.content.trim();
-    // JSON dagi backtick (```json) belgilarni tozalash
     if (rawContent.startsWith('```json')) {
       rawContent = rawContent.replace(/```json/g, '').replace(/```/g, '').trim();
     } else if (rawContent.startsWith('```')) {
@@ -78,10 +79,17 @@ JSON Formati:
 
     const parsedData = JSON.parse(rawContent);
 
+    // AI foiz bo'yicha to'g'ri saralaganini kafolatlash
+    if (parsedData.recommendations && Array.isArray(parsedData.recommendations)) {
+      parsedData.recommendations = parsedData.recommendations
+        .filter((u: any) => u.matchPercentage >= 50)
+        .sort((a: any, b: any) => b.matchPercentage - a.matchPercentage);
+    }
+
     return NextResponse.json(parsedData);
 
   } catch (err: any) {
     console.error('AI Processing Error:', err);
-    return NextResponse.json({ error: 'AI tahlilida xatolik yuz berdi: ' + err.message }, { status: 500 });
+    return NextResponse.json({ error: 'AI tahlil xatosi: ' + err.message }, { status: 500 });
   }
 }
