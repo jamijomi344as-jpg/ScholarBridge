@@ -120,7 +120,7 @@ export default function FindPage() {
           </div>
         </div>
 
-        {/* MAMLAKATLAR (YANGI) */}
+        {/* MAMLAKATLAR */}
         <div>
           <label style={{ display: 'block', fontWeight: 'bold', fontSize: '13px', color: '#4B5563', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '10px' }}>
             MAMLAKATNI TANLANG (Bir nechta tanlash mumkin)
@@ -187,7 +187,7 @@ export default function FindPage() {
             <input type="text" value={ielts} onChange={(e) => setIelts(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #D1D5DB' }} />
           </div>
           <div>
-            <label style={{ display: 'block', fontWeight 600, fontSize: '14px', marginBottom: '6px' }}>SAT balli (agar bo'lsa):</label>
+            <label style={{ display: 'block', fontWeight: 600, fontSize: '14px', marginBottom: '6px' }}>SAT balli (agar bo'lsa):</label>
             <input type="text" value={sat} onChange={(e) => setSat(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #D1D5DB' }} />
           </div>
         </div>
