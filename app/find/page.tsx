@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
-// Jahon bo'yicha eng mashhur asosiy yo'nalishlar
+// Jahon bo'yicha asosiy va ommabop yo'nalishlar
 const MAJOR_OPTIONS = [
   'Computer Science & IT',
   'Software Engineering & AI',
@@ -18,21 +18,46 @@ const MAJOR_OPTIONS = [
   'Psychology & Social Work'
 ];
 
-// Target davlatlar ro'yxati
+// Rasmingizdagi to'liq alifbo tartibidagi davlatlar ro'yxati
 const COUNTRY_OPTIONS = [
-  'All Countries (Barcha davlatlar)',
-  'United States (USA)',
-  'United Kingdom (UK)',
-  'Germany',
-  'Turkey',
-  'South Korea',
-  'China',
-  'Canada',
-  'Australia',
-  'Italy',
-  'Japan',
-  'Poland',
-  'Hungary'
+  'Barcha davlatlar (All Countries)',
+  'Argentina',
+  'Eron',
+  'Avstriya',
+  'Ozarbayjon',
+  'Bahrayn',
+  'Bangladesh',
+  'Belgiya',
+  'Bruney',
+  'Chexiya',
+  'Daniya',
+  'Estoniya',
+  'Finlandiya',
+  'Gruziya',
+  'Vengriya',
+  'Irlandiya',
+  'Qirg‘iziston',
+  'Latviya',
+  'Marokash',
+  'Niderlandiya',
+  'Yangi Zelandiya',
+  'Norvegiya',
+  'Filippin',
+  'Polsha',
+  'Portugaliya',
+  'Qatar',
+  'Ruminiya',
+  'Ruanda',
+  'Singapur',
+  'Slovakiya',
+  'Ispaniya',
+  'Shvetsiya',
+  'Shveytsariya',
+  'Tailand',
+  'Ukraina',
+  'BAA',
+  'Tayvan',
+  'Yevropa'
 ];
 
 export default function FindPage() {
@@ -41,18 +66,39 @@ export default function FindPage() {
   const [errorMsg, setErrorMsg] = useState('');
   const [searched, setSearched] = useState(false);
 
-  // Dinamik forma holati
+  // Form inputlar
   const [gpa, setGpa] = useState('');
   const [ielts, setIelts] = useState('');
   const [sat, setSat] = useState('');
   const [userCountry, setUserCountry] = useState('Uzbekistan');
   const [budget, setBudget] = useState('');
-  
-  // Bir nechta tanlash uchun masivlar
-  const [selectedMajors, setSelectedMajors] = useState<string[]>([]);
-  const [selectedTargetCountries, setSelectedTargetCountries] = useState<string[]>(['All Countries (Barcha davlatlar)']);
 
-  // Yo'nalishlarni tanlash/o'chirish
+  // Dropdown ochiq/yopiq holatlari
+  const [isMajorOpen, setIsMajorOpen] = useState(false);
+  const [isTargetOpen, setIsTargetOpen] = useState(false);
+
+  // Tanlangan qiymatlar
+  const [selectedMajors, setSelectedMajors] = useState<string[]>([]);
+  const [selectedTargetCountries, setSelectedTargetCountries] = useState<string[]>(['Barcha davlatlar (All Countries)']);
+
+  const majorRef = useRef<HTMLDivElement>(null);
+  const targetRef = useRef<HTMLDivElement>(null);
+
+  // Tashqariga bosganda dropdownlarni yopish
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (majorRef.current && !majorRef.current.contains(event.target as Node)) {
+        setIsMajorOpen(false);
+      }
+      if (targetRef.current && !targetRef.current.contains(event.target as Node)) {
+        setIsTargetOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Yo'nalishlarni tanlash
   const toggleMajor = (major: string) => {
     if (selectedMajors.includes(major)) {
       setSelectedMajors(selectedMajors.filter((m) => m !== major));
@@ -61,22 +107,22 @@ export default function FindPage() {
     }
   };
 
-  // Target davlatlarni tanlash/o'chirish
+  // Target davlatlarni tanlash
   const toggleTargetCountry = (country: string) => {
-    if (country === 'All Countries (Barcha davlatlar)') {
-      setSelectedTargetCountries(['All Countries (Barcha davlatlar)']);
+    if (country === 'Barcha davlatlar (All Countries)') {
+      setSelectedTargetCountries(['Barcha davlatlar (All Countries)']);
       return;
     }
 
-    let updated = selectedTargetCountries.filter(c => c !== 'All Countries (Barcha davlatlar)');
+    let updated = selectedTargetCountries.filter((c) => c !== 'Barcha davlatlar (All Countries)');
     if (updated.includes(country)) {
-      updated = updated.filter(c => c !== country);
+      updated = updated.filter((c) => c !== country);
     } else {
       updated.push(country);
     }
 
     if (updated.length === 0) {
-      updated = ['All Countries (Barcha davlatlar)'];
+      updated = ['Barcha davlatlar (All Countries)'];
     }
     setSelectedTargetCountries(updated);
   };
@@ -85,7 +131,7 @@ export default function FindPage() {
     e.preventDefault();
 
     if (!gpa || !ielts || selectedMajors.length === 0 || !userCountry || !budget) {
-      alert("Iltimos, barcha majburiy maydonlarni to'ldiring hamda kamida bitta yo'nalishni tanlang.");
+      alert("Iltimos, barcha majburiy maydonlarni to'ldiring va kamida bitta yo'nalishni tanlang.");
       return;
     }
 
@@ -99,7 +145,7 @@ export default function FindPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          schoolGrade: gpa, // 5 ballik baho
+          schoolGrade: gpa,
           ielts: ielts,
           sat: sat,
           majors: selectedMajors,
@@ -150,7 +196,7 @@ export default function FindPage() {
               <div className="two-col">
                 <div className="field">
                   <label htmlFor="gpa">GPA (O'rtacha baho)</label>
-                  <span className="hint">5 ballik sistemada (masalan: 4.85)</span>
+                  <span className="hint">5 ballik sistemada (masalan: 4.80)</span>
                   <input
                     type="number"
                     id="gpa"
@@ -180,51 +226,79 @@ export default function FindPage() {
                 </div>
               </div>
 
-              {/* YO'NALISH TANLASH (MULTI-SELECT PILLS) */}
-              <div className="field">
+              {/* YO'NALISH TANLASH (CUSTOM DROPDOWN) */}
+              <div className="field" ref={majorRef}>
                 <label>Intended Major(s)</label>
-                <span className="hint">Bir nechta yo'nalishni tanlashingiz mumkin:</span>
-                <div className="pills-container">
-                  {MAJOR_OPTIONS.map((major) => {
-                    const isSelected = selectedMajors.includes(major);
-                    return (
-                      <button
-                        type="button"
-                        key={major}
-                        className={`pill-btn ${isSelected ? 'active' : ''}`}
-                        onClick={() => toggleMajor(major)}
-                      >
-                        {isSelected ? '✓ ' : '+ '}
-                        {major}
-                      </button>
-                    );
-                  })}
+                <div className="custom-dropdown-wrap">
+                  <div
+                    className={`dropdown-trigger ${isMajorOpen ? 'active' : ''}`}
+                    onClick={() => setIsMajorOpen(!isMajorOpen)}
+                  >
+                    <span>
+                      {selectedMajors.length === 0
+                        ? 'Yo‘nalishlarni tanlang...'
+                        : `${selectedMajors.length} ta yo‘nalish tanlandi`}
+                    </span>
+                    <span className="arrow">▾</span>
+                  </div>
+
+                  {isMajorOpen && (
+                    <div className="dropdown-menu">
+                      {MAJOR_OPTIONS.map((major) => {
+                        const checked = selectedMajors.includes(major);
+                        return (
+                          <label key={major} className="dropdown-item">
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={() => toggleMajor(major)}
+                            />
+                            <span>{major}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* TARGET DAVLATLARNI TANLASH (MULTI-SELECT PILLS) */}
-              <div className="field">
+              {/* TARGET DAVLATLARNI TANLASH (RASMINGIZDAGI BARCHA DAVLATLAR) */}
+              <div className="field" ref={targetRef}>
                 <label>Target Countries (Grant kutilayotgan davlatlar)</label>
-                <span className="hint">Qaysi davlatlardan universitet va grant qidirilsin?</span>
-                <div className="pills-container">
-                  {COUNTRY_OPTIONS.map((country) => {
-                    const isSelected = selectedTargetCountries.includes(country);
-                    return (
-                      <button
-                        type="button"
-                        key={country}
-                        className={`pill-btn ${isSelected ? 'active' : ''}`}
-                        onClick={() => toggleTargetCountry(country)}
-                      >
-                        {isSelected ? '✓ ' : '+ '}
-                        {country}
-                      </button>
-                    );
-                  })}
+                <div className="custom-dropdown-wrap">
+                  <div
+                    className={`dropdown-trigger ${isTargetOpen ? 'active' : ''}`}
+                    onClick={() => setIsTargetOpen(!isTargetOpen)}
+                  >
+                    <span>
+                      {selectedTargetCountries.length === 0
+                        ? 'Davlatlarni tanlang...'
+                        : selectedTargetCountries.join(', ')}
+                    </span>
+                    <span className="arrow">▾</span>
+                  </div>
+
+                  {isTargetOpen && (
+                    <div className="dropdown-menu scrollable">
+                      {COUNTRY_OPTIONS.map((country) => {
+                        const checked = selectedTargetCountries.includes(country);
+                        return (
+                          <label key={country} className="dropdown-item">
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={() => toggleTargetCountry(country)}
+                            />
+                            <span>{country}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* USER NATIVE COUNTRY */}
+              {/* USER RESIDENCE COUNTRY */}
               <div className="field">
                 <label htmlFor="userCountry">Your Country of Residence</label>
                 <div className="select-wrap">
@@ -528,33 +602,81 @@ export default function FindPage() {
           box-shadow: 0 0 0 3px rgba(22, 35, 63, 0.1);
         }
 
-        .pills-container {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 8px;
-          margin-top: 4px;
+        /* CUSTOM DROPDOWN STYLES */
+        .custom-dropdown-wrap {
+          position: relative;
+          width: 100%;
         }
 
-        .pill-btn {
+        .dropdown-trigger {
+          width: 100%;
+          padding: 13px 14px;
+          border: 1.5px solid var(--rule);
+          border-radius: 3px;
+          background: white;
+          color: var(--ink);
+          font-size: 0.97rem;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          cursor: pointer;
+          user-select: none;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .dropdown-trigger.active {
+          border-color: var(--navy);
+          box-shadow: 0 0 0 3px rgba(22, 35, 63, 0.1);
+        }
+
+        .dropdown-trigger .arrow {
+          color: var(--ink-soft);
+          font-size: 0.85rem;
+          margin-left: 10px;
+        }
+
+        .dropdown-menu {
+          position: absolute;
+          top: calc(100% + 4px);
+          left: 0;
+          right: 0;
           background: white;
           border: 1.5px solid var(--rule);
+          border-radius: 3px;
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+          z-index: 100;
+          display: flex;
+          flex-direction: column;
+          padding: 6px 0;
+        }
+
+        .dropdown-menu.scrollable {
+          max-height: 220px;
+          overflow-y: auto;
+        }
+
+        .dropdown-item {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 10px 14px;
+          font-size: 0.92rem;
           color: var(--ink);
-          padding: 7px 12px;
-          border-radius: 20px;
-          font-size: 0.82rem;
-          font-weight: 500;
           cursor: pointer;
-          transition: all 0.15s ease;
+          transition: background 0.15s ease;
         }
 
-        .pill-btn:hover {
-          border-color: var(--navy);
+        .dropdown-item:hover {
+          background: var(--paper-2);
         }
 
-        .pill-btn.active {
-          background: var(--navy);
-          color: white;
-          border-color: var(--navy);
+        .dropdown-item input[type='checkbox'] {
+          width: 16px;
+          height: 16px;
+          accent-color: var(--navy);
+          cursor: pointer;
         }
 
         .select-wrap {
