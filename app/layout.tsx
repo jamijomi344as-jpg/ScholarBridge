@@ -1,10 +1,9 @@
 import type { Metadata } from 'next';
-import globals from './globals.css';
 import Navbar from '@/components/Navbar';
 
 export const metadata: Metadata = {
   title: 'ScholarBridge AI — Universitet va Grantlar Platformasi',
-  description: 'AI yordamida o'zingizga mos keluvchi TOP universitetlar va to'liq grantlarni toping',
+  description: "AI yordamida o'zingizga mos keluvchi TOP universitetlar va to'liq grantlarni toping",
 };
 
 export default function RootLayout({
