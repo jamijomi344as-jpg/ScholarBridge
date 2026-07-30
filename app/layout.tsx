@@ -1,19 +1,22 @@
-import type { Metadata } from "next";
-import type { ReactNode } from "react";
-import "./globals.css";
-import Navbar from "@/components/Navbar";
+import type { Metadata } from 'next';
+import globals from './globals.css';
+import Navbar from '@/components/Navbar';
 
 export const metadata: Metadata = {
-  title: "ScholarBridge AI",
-  description: "AI-powered university and scholarship guidance for top international applicants.",
+  title: 'ScholarBridge AI — Universitet va Grantlar Platformasi',
+  description: 'AI yordamida o'zingizga mos keluvchi TOP universitetlar va to'liq grantlarni toping',
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="en">
-      <body>
+    <html lang="uz">
+      <body style={{ margin: 0, padding: 0 }}>
         <Navbar />
-        {children}
+        <main>{children}</main>
       </body>
     </html>
   );
