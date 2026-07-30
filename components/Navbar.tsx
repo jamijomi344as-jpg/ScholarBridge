@@ -4,7 +4,7 @@ export default function Navbar() {
   return (
     <nav style={{
       display: 'flex',
-      justify: 'space-between',
+      justifyContent: 'space-between',
       alignItems: 'center',
       padding: '16px 40px',
       borderBottom: '1px solid #eaeaea',
