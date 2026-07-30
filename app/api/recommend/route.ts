@@ -3,142 +3,92 @@ import { NextResponse } from 'next/server';
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { schoolGrade, ielts, sat, majors, fundingTypes, selectedCountries, degrees } = body;
+    const { schoolGrade, ielts, sat, majors, fundingTypes, selectedCountries, userOriginCountry } = body;
 
-    // Kalitlarni dinamik ravishda tekshirish
-    const apiKey = process.env.OPENAI_API_KEY || process.env.GROQ_API_KEY;
-    const isOpenAI = !!process.env.OPENAI_API_KEY;
+    const apiKey = process.env.GROK_API_KEY;
 
-    let aiRecommendations: any[] = [];
-
-    // 1. Agar API Kalit mavjud bo'lsa - AI orqali real-time tahlil
-    if (apiKey) {
-      const apiUrl = isOpenAI 
-        ? 'https://api.openai.com/v1/chat/completions' 
-        : 'https://api.groq.com/openai/v1/chat/completions';
-        
-      const modelName = isOpenAI ? 'gpt-4o-mini' : 'llama-3.3-70b-versatile';
-
-      const prompt = `
-Siz xalqaro ta'lim va grantlar bo'yicha tahlilchisiz.
-Foydalanuvchi profili:
-- Ta'lim darajasi: ${degrees?.join(', ') || 'Bakalavr'}
-- Soha: ${majors?.join(', ') || 'Umumiy'}
-- GPA: ${schoolGrade} / 5.0
-- IELTS: ${ielts || 'Yoq'}
-- SAT: ${sat || 'Yoq'}
-- Davlatlar: ${selectedCountries?.join(', ') || 'Barcha davlatlar'}
-- Moliya turi: ${fundingTypes?.join(', ') || 'To\'liq grant'}
-
-TALAB:
-Foydalanuvchi profiliga mos keladigan (matchPercentage >= 50%) universitet va grantlarni tanlang (max 50 ta).
-Match foizlari bo'yicha kamayish tartibida saralang.
-
-JAVOBNI FAQAT SHU JSON FORMATIDA QAYTARING:
-{
-  "recommendations": [
-    {
-      "universityName": "Universitet rasmiy nomi (Inglizcha)",
-      "country": "Davlat nomi",
-      "category": "Match",
-      "matchPercentage": 85,
-      "fundingType": "To'liq grant",
-      "degree": "Bakalavr",
-      "domain": "universitet.edu",
-      "reason": "Aniq va xolis tahlil sababi."
+    if (!apiKey) {
+      return NextResponse.json(
+        { error: "GROK_API_KEY sozlanmagan. Iltimos, .env.local faylingizga GROK_API_KEY joylang." },
+        { status: 500 }
+      );
     }
-  ]
-}
+
+    const prompt = `
+Abituriyent profili:
+- O'rtacha bahosi (GPA): ${schoolGrade} (5 ballik sistemada)
+- IELTS balli: ${ielts}
+- SAT balli: ${sat || 'Mavjud emas'}
+- Qiziqqan yo'nalishlari: ${majors ? majors.join(', ') : 'Ko\'rsatilmadi'}
+- Kerakli grant turi (Funding): ${fundingTypes ? fundingTypes.join(', ') : 'To\'liq grant'}
+- Yashash davlati: ${userOriginCountry || 'Uzbekistan'}
+- Tanlangan target davlatlar: ${selectedCountries ? selectedCountries.join(', ') : 'Barcha davlatlar'}
+
+Vazifa:
+Ushbu abituriyent profili va imkoniyatlariga to'liq mos keladigan EXACTLY 5 ta eng yaxshi xalqaro universitet va grant dasturlarini tahlil qilib ber.
+
+Quyidagi strukturada faqat va faqat strictly valid JSON array shaklida javob qaytar. Hech qanday qo'shimcha tushuntirish, salomlashish yoki markdown (```json ...) bezak yozma:
+[
+  {
+    "id": 1,
+    "universityName": "Universitet nomi",
+    "country": "Davlat nomi",
+    "category": "safety" | "target" | "reach",
+    "matchPercentage": 92,
+    "reason": "Nega aynan bu universitet va grant mos kelishi haqida qisqa (1-2 cümlada) xulosa",
+    "description": "Universitet haqida batafsil ma'lumot: Qanday grant beradi, turar joy, talablar va qabul imkoniyatlari haqida to'liqroq sharh.",
+    "scholarshipName": "Aynan taklif etilayotgan grant yoki stipendiya nomi",
+    "website": "[https://universitet-rasmiy-sayti.edu](https://universitet-rasmiy-sayti.edu)"
+  }
+]
 `;
 
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model: modelName,
-          messages: [{ role: 'user', content: prompt }],
-          temperature: 0.2,
-          response_format: { type: 'json_object' }
-        }),
-      });
+    // xAI (Grok) API ga so'rov yuborish
+    const response = await fetch('[https://api.xai.com/v1/chat/completions](https://api.xai.com/v1/chat/completions)', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'grok-2-latest',
+        messages: [
+          {
+            role: 'system',
+            content: 'Siz xalqaro universitetlar va grantlar bo‘yicha professional konsultantsiz. Faqat ko‘rsatilgan formatdagi valid JSON array qaytarasiz.',
+          },
+          { role: 'user', content: prompt },
+        ],
+        temperature: 0.7,
+      }),
+    });
 
-      const aiData = await response.json();
-      if (aiData.choices && aiData.choices[0]?.message?.content) {
-        const parsed = JSON.parse(aiData.choices[0].message.content);
-        aiRecommendations = parsed.recommendations || [];
-      }
+    const data = await response.json();
+
+    if (!response.ok || data.error) {
+      console.error('Grok API Error Response:', data);
+      return NextResponse.json(
+        { error: data.error?.message || `Grok API xatoligi: ${response.statusText}` },
+        { status: response.status }
+      );
     }
 
-    // 2. Kalit bo'lmagan taqdirda — Ochiq Live API'dan dinamik qidiruv
-    if (aiRecommendations.length === 0) {
-      const countryParam = selectedCountries?.[0] 
-        ? `country=${encodeURIComponent(selectedCountries[0])}` 
-        : `name=University`;
+    const rawContent = data.choices[0].message.content;
 
-      const liveRes = await fetch(`http://universities.hipolabs.com/search?${countryParam}`);
-      const rawLiveList = await liveRes.json();
+    // AI ba'zan ```json va ``` belgilari bilan qaytaradi, shularni tozalaymiz:
+    const cleanJson = rawContent
+      .replace(/```json/gi, '')
+      .replace(/```/g, '')
+      .trim();
 
-      const userIelts = parseFloat(ielts) || 0;
-      const baseMatch = userIelts >= 6.5 ? 85 : 60;
+    const recommendations = JSON.parse(cleanJson);
 
-      aiRecommendations = rawLiveList.slice(0, 50).map((u: any, idx: number) => {
-        const calcMatch = Math.max(50, baseMatch - (idx % 15));
-        return {
-          universityName: u.name,
-          country: u.country || selectedCountries?.[0] || 'Xalqaro',
-          category: calcMatch >= 75 ? 'Match' : 'Safety',
-          matchPercentage: calcMatch,
-          fundingType: fundingTypes?.[0] || "To'liq grant",
-          degree: degrees?.[0] || 'Bakalavr',
-          domain: u.domains?.[0] || '',
-          reason: `${majors?.[0] || 'Tanlangan'} sohasida dasturlar mavjud. Kirish imkoniyati yuqori.`
-        };
-      });
-    }
-
-    // 3. Dinamik metadata ulab natijani shakllantirish (Sayt, Logo, Rasm)
-    const finalResults = await Promise.all(
-      aiRecommendations
-        .filter((item) => item.matchPercentage >= 50)
-        .sort((a, b) => b.matchPercentage - a.matchPercentage)
-        .slice(0, 50)
-        .map(async (item) => {
-          let website = '#';
-          let logo = '';
-
-          if (item.domain) {
-            website = `https://${item.domain}`;
-            logo = `https://logo.clearbit.com/${item.domain}`;
-          } else {
-            try {
-              const hipoRes = await fetch(`http://universities.hipolabs.com/search?name=${encodeURIComponent(item.universityName)}`);
-              const hipoData = await hipoRes.json();
-              if (hipoData && hipoData[0]) {
-                website = hipoData[0].web_pages?.[0] || '#';
-                const domain = hipoData[0].domains?.[0];
-                if (domain) logo = `https://logo.clearbit.com/${domain}`;
-              }
-            } catch (e) {
-              website = '#';
-            }
-          }
-
-          return {
-            ...item,
-            website,
-            logo,
-            image: `https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=800&q=80`
-          };
-        })
+    return NextResponse.json({ recommendations });
+  } catch (error: any) {
+    console.error('API Catch Error:', error);
+    return NextResponse.json(
+      { error: 'Universitetlarni tahlil qilishda xatolik yuz berdi: ' + error.message },
+      { status: 500 }
     );
-
-    return NextResponse.json({ recommendations: finalResults });
-
-  } catch (err: any) {
-    console.error('API Exec Error:', err);
-    return NextResponse.json({ error: 'Xatolik yuz berdi: ' + err.message }, { status: 500 });
   }
 }
