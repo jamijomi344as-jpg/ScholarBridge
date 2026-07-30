@@ -43,9 +43,9 @@ Quyidagi JSON strukturasida javob qaytar:
 ]
 `;
 
-    // Google Gemini API ga so'rov
+    // Google Gemini API so'rovi (gemini-2.5-flash va v1beta bilan)
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: {
@@ -65,35 +65,40 @@ Quyidagi JSON strukturasida javob qaytar:
       }
     );
 
-    const data = await response.json();
-
+    // Agar so'rov muvaffaqiyatsiz bo'lsa (masalan 404 yoki 400 status kelsa)
     if (!response.ok) {
-      const geminiErrorMessage = data?.error?.message || response.statusText;
+      const errorText = await response.text();
+      console.error('Gemini API RAW Error Response:', errorText);
+      
+      let parsedError = 'Gemini API so‘rovida xatolik yuz berdi';
+      try {
+        const errJson = JSON.parse(errorText);
+        parsedError = errJson?.error?.message || parsedError;
+      } catch (e) {
+        // HTTP HTML error page bo'lsa
+        parsedError = `Gemini Server Error (Status ${response.status})`;
+      }
+
       return NextResponse.json(
-        { error: `Gemini API Xatosi: ${geminiErrorMessage}` },
+        { error: parsedError },
         { status: 400 }
       );
     }
 
+    const data = await response.json();
     const rawContent = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!rawContent) {
       return NextResponse.json({ error: "Gemini AI bo'sh javob qaytardi." }, { status: 400 });
     }
 
-    try {
-      const recommendations = JSON.parse(rawContent);
-      return NextResponse.json({ recommendations });
-    } catch (parseError: any) {
-      return NextResponse.json(
-        { error: `JSON Parse Xatosi: ${parseError.message}. AI javobi: ${rawContent.substring(0, 100)}...` },
-        { status: 400 }
-      );
-    }
+    const recommendations = JSON.parse(rawContent);
+    return NextResponse.json({ recommendations });
 
   } catch (error: any) {
+    console.error('API Catch Error:', error);
     return NextResponse.json(
-      { error: `Server Crash: ${error?.message || error}` },
+      { error: 'Server Catch Xatosi: ' + error.message },
       { status: 500 }
     );
   }
