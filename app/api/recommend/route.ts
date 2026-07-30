@@ -1,24 +1,30 @@
 import { NextResponse } from 'next/server';
-import OpenAI from 'openai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { 
-      schoolGrade, // 5 ballik tizim bo'yicha (masalan: 4.8 yoki 5.0)
-      degrees, // array: ['Bakalavr', 'Magistratura']
-      fundingTypes, // array: ["To'liq moliyalash", "Stipendiya"]
-      majors, // array: ['Kompyuter fanlari va IT', 'Biznes']
-      selectedCountries, // array: ['AQSh', 'Buyuk Britaniya', 'Barcha davlatlar']
-      ielts, // string (ixtiyoriy)
-      sat, // string (ixtiyoriy)
-      otherCertificates, // string (ixtiyoriy)
-      budget // string
+      schoolGrade, 
+      degrees, 
+      fundingTypes, 
+      majors, 
+      selectedCountries, 
+      ielts, 
+      sat, 
+      otherCertificates, 
+      budget 
     } = body;
+
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-1.5-flash',
+      generationConfig: {
+        responseMimeType: 'application/json', // Javobni qat'iy JSON qilish
+        temperature: 0.3,
+      },
+    });
 
     const prompt = `
 Siz xalqaro universitet va grantlar bo'yicha professional maslahatchisiz.
@@ -33,8 +39,8 @@ Foydalanuvchi ma'lumotlari:
 - Boshqa sertifikatlar: ${otherCertificates || 'Mavjud emas'}
 - Yillik maksimum byudjet: $${budget || '0'}
 
-Ushbu ma'lumotlarga mos кеladigan universitet va grant takliflarini shakllantiring.
-Javobingiz faqat va faqat quyidagi JSON formatida bo'lishi shart:
+Ushbu ma'lumotlarga mos keladigan universitet va grant takliflarini shakllantiring.
+Javobingiz faqat va faqat quyidagi JSON schema formatida bo'lishi shart:
 {
   "recommendations": [
     {
@@ -52,17 +58,13 @@ Javobingiz faqat va faqat quyidagi JSON formatida bo'lishi shart:
 }
 `;
 
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content: prompt }],
-      response_format: { type: 'json_object' },
-      temperature: 0.3,
-    });
+    const result = await model.generateContent(prompt);
+    const responseText = result.response.text();
+    const parsedData = JSON.parse(responseText || '{}');
 
-    const result = JSON.parse(response.choices[0].message.content || '{}');
-    return NextResponse.json(result);
+    return NextResponse.json(parsedData);
   } catch (error) {
-    console.error('AI Error:', error);
+    console.error('Gemini AI Error:', error);
     return NextResponse.json({ error: 'AI tahlilida xatolik yuz berdi' }, { status: 500 });
   }
 }
