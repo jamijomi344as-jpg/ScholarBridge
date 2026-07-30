@@ -5,13 +5,12 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { schoolGrade, ielts, sat, majors, fundingTypes, selectedCountries, userOriginCountry } = body;
 
-    // Render'dagi GEMINI_API_KEY ni olamiz
     const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
       return NextResponse.json(
-        { error: "GEMINI_API_KEY sozlanmagan. Render Dashboard'ni tekshiring." },
-        { status: 500 }
+        { error: "GEMINI_API_KEY sozlanmagan! Render Environment Variables bo'limini tekshiring." },
+        { status: 400 }
       );
     }
 
@@ -44,7 +43,7 @@ Quyidagi JSON strukturasida javob qaytar:
 ]
 `;
 
-    // Google Gemini API v1beta so'rovi (JSON Mode yoqilgan)
+    // Google Gemini API ga so'rov
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
       {
@@ -59,7 +58,7 @@ Quyidagi JSON strukturasida javob qaytar:
             },
           ],
           generationConfig: {
-            responseMimeType: 'application/json', // Bu parametr javobni STRICT JSON qiladi
+            responseMimeType: 'application/json',
             temperature: 0.7,
           },
         }),
@@ -68,27 +67,33 @@ Quyidagi JSON strukturasida javob qaytar:
 
     const data = await response.json();
 
-    if (!response.ok || data.error) {
-      console.error('Gemini API Error:', data);
+    if (!response.ok) {
+      const geminiErrorMessage = data?.error?.message || response.statusText;
       return NextResponse.json(
-        { error: data.error?.message || `Gemini API xatoligi: ${response.statusText}` },
-        { status: 500 }
+        { error: `Gemini API Xatosi: ${geminiErrorMessage}` },
+        { status: 400 }
       );
     }
 
     const rawContent = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!rawContent) {
-      return NextResponse.json({ error: "Gemini AI bo'sh javob qaytardi." }, { status: 500 });
+      return NextResponse.json({ error: "Gemini AI bo'sh javob qaytardi." }, { status: 400 });
     }
 
-    const recommendations = JSON.parse(rawContent);
+    try {
+      const recommendations = JSON.parse(rawContent);
+      return NextResponse.json({ recommendations });
+    } catch (parseError: any) {
+      return NextResponse.json(
+        { error: `JSON Parse Xatosi: ${parseError.message}. AI javobi: ${rawContent.substring(0, 100)}...` },
+        { status: 400 }
+      );
+    }
 
-    return NextResponse.json({ recommendations });
   } catch (error: any) {
-    console.error('API Catch Error:', error);
     return NextResponse.json(
-      { error: 'Serverda ichki xatolik: ' + error.message },
+      { error: `Server Crash: ${error?.message || error}` },
       { status: 500 }
     );
   }
