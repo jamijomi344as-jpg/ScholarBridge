@@ -10,12 +10,13 @@ export default function FindPage() {
   const [degrees, setDegrees] = useState<string[]>(['Bakalavr']);
   const [fundingTypes, setFundingTypes] = useState<string[]>(["To'liq moliyalash"]);
   const [major, setMajor] = useState<string>('Kompyuter fanlari va IT');
+  const [countries, setCountries] = useState<string[]>(['Barcha davlatlar']);
   const [schoolGrade, setSchoolGrade] = useState<string>('5');
   const [ielts, setIelts] = useState<string>('7.0');
   const [sat, setSat] = useState<string>('1350');
-  const [budget, setBudget] = useState<string>('1000');
 
   const degreeOptions = ['Bakalavr', 'Almashinuv (Bakalavr)', 'Magistratura', 'PhD', 'Professional rivojlanish'];
+  const countryOptions = ['Barcha davlatlar', 'AQSH', 'Buyuk Britaniya', 'Germaniya', 'Janubiy Koreya', 'Yaponiya', 'Vengriya', 'Kanada', 'Avstraliya'];
   const majorOptions = [
     'Kompyuter fanlari va IT',
     'Amaliy fanlar va kasblar',
@@ -26,14 +27,25 @@ export default function FindPage() {
     'Huquqshunoslik va qonunchilik',
     'Tabiiy fanlar va matematika',
     'Ijtimoiy fanlar',
-    'Qishloq va o‘rmon xo‘jaligi',
     'San\'at, dizayn va arxitektura',
-    'Ta\'lim va tarbiya',
-    'Tibbiyot va sog‘liqni saqlash',
-    'Jurnalistika va OAV',
-    'Mehmonxona biznesi, hordiq va sport'
+    'Tibbiyot va sog‘liqni saqlash'
   ];
   const fundingOptions = ["To'liq moliyalash", "Qisman moliyalash", "O'z-o'zini moliyalash", "Bepul ishtirok", "Stipendiya"];
+
+  const handleCountryToggle = (c: string) => {
+    if (c === 'Barcha davlatlar') {
+      setCountries(['Barcha davlatlar']);
+      return;
+    }
+    let updated = countries.filter((item) => item !== 'Barcha davlatlar');
+    if (updated.includes(c)) {
+      updated = updated.filter((item) => item !== c);
+    } else {
+      updated.push(c);
+    }
+    if (updated.length === 0) updated = ['Barcha davlatlar'];
+    setCountries(updated);
+  };
 
   const handleCheckboxChange = (list: string[], setList: (v: string[]) => void, item: string) => {
     if (list.includes(item)) {
@@ -52,10 +64,9 @@ export default function FindPage() {
       degrees,
       fundingTypes,
       majors: [major],
-      selectedCountries: ['AQSH', 'Janubiy Koreya', 'Germaniya', 'Buyuk Britaniya'],
+      selectedCountries: countries,
       ielts,
-      sat,
-      budget
+      sat
     };
 
     try {
@@ -71,11 +82,11 @@ export default function FindPage() {
         localStorage.setItem('scholarBridge_results', JSON.stringify(data.recommendations));
         router.push('/recommendations');
       } else {
-        alert("AI tavsiya tayyorlashda uzilish bo'ldi. Qayta urinib ko'ring.");
+        alert("Natija shakllantirishda xatolik yuz berdi.");
       }
     } catch (err) {
       console.error(err);
-      alert('Ulanishda xatolik yuz berdi!');
+      alert('Ulanish xatosi!');
     } finally {
       setLoading(false);
     }
@@ -87,16 +98,16 @@ export default function FindPage() {
         Universitet va Grant Saralash Formasi
       </h2>
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
         
-        {/* DARAJA SEKSIYASI */}
+        {/* DARAJA */}
         <div>
-          <label style={{ display: 'block', fontWeight: 'bold', fontSize: '13px', color: '#4B5563', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '12px' }}>
+          <label style={{ display: 'block', fontWeight: 'bold', fontSize: '13px', color: '#4B5563', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '10px' }}>
             DARAJA
           </label>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '10px', maxHeight: '160px', overflowY: 'auto', padding: '8px', border: '1px solid #E5E7EB', borderRadius: '8px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '10px', padding: '12px', border: '1px solid #E5E7EB', borderRadius: '8px' }}>
             {degreeOptions.map((item) => (
-              <label key={item} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', cursor: 'pointer', color: '#1F2937' }}>
+              <label key={item} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', cursor: 'pointer' }}>
                 <input
                   type="checkbox"
                   checked={degrees.includes(item)}
@@ -109,7 +120,27 @@ export default function FindPage() {
           </div>
         </div>
 
-        {/* SOHA SEKSIYASI */}
+        {/* MAMLAKATLAR (YANGI) */}
+        <div>
+          <label style={{ display: 'block', fontWeight: 'bold', fontSize: '13px', color: '#4B5563', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '10px' }}>
+            MAMLAKATNI TANLANG (Bir nechta tanlash mumkin)
+          </label>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '10px', padding: '12px', border: '1px solid #E5E7EB', borderRadius: '8px' }}>
+            {countryOptions.map((c) => (
+              <label key={c} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', cursor: 'pointer', fontWeight: c === 'Barcha davlatlar' ? 'bold' : 'normal' }}>
+                <input
+                  type="checkbox"
+                  checked={countries.includes(c)}
+                  onChange={() => handleCountryToggle(c)}
+                  style={{ width: '18px', height: '18px', accentColor: '#16233F' }}
+                />
+                {c}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* SOHA */}
         <div>
           <label style={{ display: 'block', fontWeight: 'bold', fontSize: '13px', color: '#4B5563', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '8px' }}>
             SOHA TANLANG
@@ -125,14 +156,14 @@ export default function FindPage() {
           </select>
         </div>
 
-        {/* MOLIYALASHTIRISH SEKSIYASI */}
+        {/* MOLIYALASHTIRISH */}
         <div>
-          <label style={{ display: 'block', fontWeight: 'bold', fontSize: '13px', color: '#4B5563', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '12px' }}>
+          <label style={{ display: 'block', fontWeight: 'bold', fontSize: '13px', color: '#4B5563', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '10px' }}>
             MOLIYALASHTIRISH TURI
           </label>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '10px', maxHeight: '160px', overflowY: 'auto', padding: '8px', border: '1px solid #E5E7EB', borderRadius: '8px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '10px', padding: '12px', border: '1px solid #E5E7EB', borderRadius: '8px' }}>
             {fundingOptions.map((item) => (
-              <label key={item} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', cursor: 'pointer', color: '#1F2937' }}>
+              <label key={item} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', cursor: 'pointer' }}>
                 <input
                   type="checkbox"
                   checked={fundingTypes.includes(item)}
@@ -149,34 +180,18 @@ export default function FindPage() {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
           <div>
             <label style={{ display: 'block', fontWeight: 600, fontSize: '14px', marginBottom: '6px' }}>Maktab bahosi (5 ballik):</label>
-            <input
-              type="text"
-              value={schoolGrade}
-              onChange={(e) => setSchoolGrade(e.target.value)}
-              style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #D1D5DB' }}
-            />
+            <input type="text" value={schoolGrade} onChange={(e) => setSchoolGrade(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #D1D5DB' }} />
           </div>
           <div>
             <label style={{ display: 'block', fontWeight: 600, fontSize: '14px', marginBottom: '6px' }}>IELTS balli:</label>
-            <input
-              type="text"
-              value={ielts}
-              onChange={(e) => setIelts(e.target.value)}
-              style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #D1D5DB' }}
-            />
+            <input type="text" value={ielts} onChange={(e) => setIelts(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #D1D5DB' }} />
           </div>
           <div>
-            <label style={{ display: 'block', fontWeight: 600, fontSize: '14px', marginBottom: '6px' }}>SAT balli (agar bo'lsa):</label>
-            <input
-              type="text"
-              value={sat}
-              onChange={(e) => setSat(e.target.value)}
-              style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #D1D5DB' }}
-            />
+            <label style={{ display: 'block', fontWeight 600, fontSize: '14px', marginBottom: '6px' }}>SAT balli (agar bo'lsa):</label>
+            <input type="text" value={sat} onChange={(e) => setSat(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #D1D5DB' }} />
           </div>
         </div>
 
-        {/* SUBMIT BUTTON */}
         <button
           type="submit"
           disabled={loading}
@@ -189,11 +204,10 @@ export default function FindPage() {
             borderRadius: '8px',
             fontSize: '16px',
             fontWeight: 'bold',
-            cursor: loading ? 'not-allowed' : 'pointer',
-            transition: 'background-color 0.2s'
+            cursor: loading ? 'not-allowed' : 'pointer'
           }}
         >
-          {loading ? 'AI Universitet va Grantlarni Qidirmoqda...' : 'Universitet va Grantlarni Topish 🚀'}
+          {loading ? 'Filtrlar Bo\'yicha Qidirilmoqda...' : 'Universitet va Grantlarni Topish 🚀'}
         </button>
       </form>
     </div>
