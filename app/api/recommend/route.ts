@@ -29,7 +29,9 @@ Abituriyent profili:
 Vazifa:
 Ushbu abituriyent profili va imkoniyatlariga to'liq mos keladigan EXACTLY 10 ta eng yaxshi xalqaro universitet va grant dasturlarini tahlil qilib ber.
 
-Abituriyent tanlagan grant turi (${userFundingPreference}) bo'yicha ushbu universitetda grantni yutish ehtimoli (masalan: "Yuqori (75-85%)", "O'rta (40-60%)", "Murakkab/Pasti (15-30%)") va uning sabablarini ham alohida baholang.
+MUHIM: 
+1. "Reach", "Safety" yoki "Match" degan so'zlarni ISHLATMA. Qabul qilinish ehtimoli uchun faqat aniq foiz ko'rsat (masalan: 74, 63, 85).
+2. Grant yutish ehtimoli uchun ham faqat aniq tahminiy foizni ko'rsat (masalan: "74%", "63%", "52%").
 
 Quyidagi JSON strukturasida javob qaytar (Strictly valid JSON array):
 [
@@ -37,10 +39,9 @@ Quyidagi JSON strukturasida javob qaytar (Strictly valid JSON array):
     "id": 1,
     "universityName": "Universitet nomi",
     "country": "Davlat nomi",
-    "category": "safety",
-    "matchPercentage": 92,
-    "scholarshipChance": "Yuqori (75-80%)",
-    "scholarshipChanceDetails": "Tanlangan grant turini olish ehtimoli va uning asosiy sabablari (IELTS/GPA mosligi, raqobat darajasi)",
+    "matchPercentage": 74,
+    "scholarshipChance": "74%",
+    "scholarshipChanceDetails": "Tanlangan grant turini olish ehtimoli va uning sabablari (IELTS/GPA mosligi, raqobat darajasi)",
     "reason": "Nega aynan bu universitet va grant mos kelishi haqida qisqa xulosa",
     "description": "Universitet haqida batafsil ma'lumot: Qanday grant beradi, turar joy va qabul imkoniyatlari.",
     "scholarshipName": "Aynan taklif etilayotgan grant yoki stipendiya nomi",
