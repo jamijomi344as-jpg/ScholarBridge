@@ -5,11 +5,11 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { schoolGrade, ielts, sat, majors, fundingTypes, selectedCountries, userOriginCountry } = body;
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY?.trim();
 
     if (!apiKey) {
       return NextResponse.json(
-        { error: "GEMINI_API_KEY sozlanmagan! Render Environment Variables bo'limini tekshiring." },
+        { error: "GEMINI_API_KEY topilmadi! Render Environment Variables bo'limini tekshiring." },
         { status: 400 }
       );
     }
@@ -43,20 +43,16 @@ Quyidagi JSON strukturasida javob qaytar:
 ]
 `;
 
-    // Rasmiy va eng barqaror Gemini-1.5-Flash modeli (v1beta endpointida)
+    // gemini-1.5-flash-latest eng barqaror va faol model aliasi hisoblanadi
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          contents: [
-            {
-              parts: [{ text: prompt }],
-            },
-          ],
+          contents: [{ parts: [{ text: prompt }] }],
           generationConfig: {
             responseMimeType: 'application/json',
             temperature: 0.7,
@@ -65,20 +61,16 @@ Quyidagi JSON strukturasida javob qaytar:
       }
     );
 
-    const errorText = await response.text();
+    const data = await response.json();
 
     if (!response.ok) {
-      console.error('Gemini API Error Detail:', errorText);
-      let msg = 'Gemini API soʻrovida xatolik';
-      try {
-        const parsed = JSON.parse(errorText);
-        msg = parsed?.error?.message || msg;
-      } catch (e) {}
-
-      return NextResponse.json({ error: msg }, { status: 400 });
+      console.error('Gemini API Error:', data);
+      return NextResponse.json(
+        { error: `Gemini API Xatosi: ${data?.error?.message || response.statusText}` },
+        { status: response.status }
+      );
     }
 
-    const data = JSON.parse(errorText);
     const rawContent = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!rawContent) {
@@ -89,7 +81,7 @@ Quyidagi JSON strukturasida javob qaytar:
     return NextResponse.json({ recommendations });
 
   } catch (error: any) {
-    console.error('API Catch Error:', error);
+    console.error('Catch Error:', error);
     return NextResponse.json(
       { error: 'Server Catch Xatosi: ' + error.message },
       { status: 500 }
