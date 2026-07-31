@@ -14,20 +14,24 @@ export async function POST(req: Request) {
       );
     }
 
+    const userFundingPreference = fundingTypes ? fundingTypes.join(', ') : 'To\'liq grant';
+
     const prompt = `
 Abituriyent profili:
 - O'rtacha bahosi (GPA): ${schoolGrade} (5 ballik sistemada)
 - IELTS balli: ${ielts}
 - SAT balli: ${sat || 'Mavjud emas'}
 - Qiziqqan yo'nalishlari: ${majors ? majors.join(', ') : 'Ko"rsatilmadi'}
-- Kerakli grant turi (Funding): ${fundingTypes ? fundingTypes.join(', ') : 'To"liq grant'}
+- Kerakli grant turi (Funding): ${userFundingPreference}
 - Yashash davlati: ${userOriginCountry || 'Uzbekistan'}
 - Tanlangan target davlatlar: ${selectedCountries ? selectedCountries.join(', ') : 'Barcha davlatlar'}
 
 Vazifa:
-Ushbu abituriyent profili va imkoniyatlariga to'liq mos keladigan EXACTLY 5 ta eng yaxshi xalqaro universitet va grant dasturlarini tahlil qilib ber.
+Ushbu abituriyent profili va imkoniyatlariga to'liq mos keladigan EXACTLY 10 ta eng yaxshi xalqaro universitet va grant dasturlarini tahlil qilib ber.
 
-Quyidagi JSON strukturasida javob qaytar:
+Abituriyent tanlagan grant turi (${userFundingPreference}) bo'yicha ushbu universitetda grantni yutish ehtimoli (masalan: "Yuqori (75-85%)", "O'rta (40-60%)", "Murakkab/Pasti (15-30%)") va uning sabablarini ham alohida baholang.
+
+Quyidagi JSON strukturasida javob qaytar (Strictly valid JSON array):
 [
   {
     "id": 1,
@@ -35,6 +39,8 @@ Quyidagi JSON strukturasida javob qaytar:
     "country": "Davlat nomi",
     "category": "safety",
     "matchPercentage": 92,
+    "scholarshipChance": "Yuqori (75-80%)",
+    "scholarshipChanceDetails": "Tanlangan grant turini olish ehtimoli va uning asosiy sabablari (IELTS/GPA mosligi, raqobat darajasi)",
     "reason": "Nega aynan bu universitet va grant mos kelishi haqida qisqa xulosa",
     "description": "Universitet haqida batafsil ma'lumot: Qanday grant beradi, turar joy va qabul imkoniyatlari.",
     "scholarshipName": "Aynan taklif etilayotgan grant yoki stipendiya nomi",
@@ -43,7 +49,6 @@ Quyidagi JSON strukturasida javob qaytar:
 ]
 `;
 
-    // Hozirgi kunda Google AI Studio da ishlaydigan barcha faol modellar iyerarxiyasi
     const models = [
       'gemini-2.5-flash',
       'gemini-2.0-flash',
@@ -87,7 +92,7 @@ Quyidagi JSON strukturasida javob qaytar:
     }
 
     return NextResponse.json(
-      { error: `Gemini API Xatosi (Barcha modellar tekshirildi): ${lastErrorMessage}` },
+      { error: `Gemini API Xatosi: ${lastErrorMessage}` },
       { status: 400 }
     );
 
