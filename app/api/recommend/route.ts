@@ -43,42 +43,53 @@ Quyidagi JSON strukturasida javob qaytar:
 ]
 `;
 
-    // gemini-1.5-flash-latest eng barqaror va faol model aliasi hisoblanadi
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: {
-            responseMimeType: 'application/json',
-            temperature: 0.7,
-          },
-        }),
+    // Hozirgi kunda Google AI Studio da ishlaydigan barcha faol modellar iyerarxiyasi
+    const models = [
+      'gemini-2.5-flash',
+      'gemini-2.0-flash',
+      'gemini-2.5-pro',
+      'gemini-1.5-flash-8b'
+    ];
+
+    let lastErrorMessage = '';
+
+    for (const model of models) {
+      try {
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: prompt }] }],
+              generationConfig: {
+                responseMimeType: 'application/json',
+                temperature: 0.7,
+              },
+            }),
+          }
+        );
+
+        const data = await response.json();
+
+        if (response.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) {
+          const rawContent = data.candidates[0].content.parts[0].text;
+          const recommendations = JSON.parse(rawContent);
+          return NextResponse.json({ recommendations });
+        } else if (data.error?.message) {
+          lastErrorMessage = `[${model}]: ${data.error.message}`;
+        }
+      } catch (err: any) {
+        lastErrorMessage = `[${model}]: ${err.message}`;
       }
+    }
+
+    return NextResponse.json(
+      { error: `Gemini API Xatosi (Barcha modellar tekshirildi): ${lastErrorMessage}` },
+      { status: 400 }
     );
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      console.error('Gemini API Error:', data);
-      return NextResponse.json(
-        { error: `Gemini API Xatosi: ${data?.error?.message || response.statusText}` },
-        { status: response.status }
-      );
-    }
-
-    const rawContent = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!rawContent) {
-      return NextResponse.json({ error: "Gemini AI bo'sh javob qaytardi." }, { status: 400 });
-    }
-
-    const recommendations = JSON.parse(rawContent);
-    return NextResponse.json({ recommendations });
 
   } catch (error: any) {
     console.error('Catch Error:', error);
