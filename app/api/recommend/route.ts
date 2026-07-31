@@ -43,9 +43,9 @@ Quyidagi JSON strukturasida javob qaytar:
 ]
 `;
 
-    // Google Gemini API so'rovi (gemini-2.5-flash va v1beta bilan)
+    // Rasmiy va eng barqaror Gemini-1.5-Flash modeli (v1beta endpointida)
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: {
@@ -65,27 +65,20 @@ Quyidagi JSON strukturasida javob qaytar:
       }
     );
 
-    // Agar so'rov muvaffaqiyatsiz bo'lsa (masalan 404 yoki 400 status kelsa)
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Gemini API RAW Error Response:', errorText);
-      
-      let parsedError = 'Gemini API so‘rovida xatolik yuz berdi';
-      try {
-        const errJson = JSON.parse(errorText);
-        parsedError = errJson?.error?.message || parsedError;
-      } catch (e) {
-        // HTTP HTML error page bo'lsa
-        parsedError = `Gemini Server Error (Status ${response.status})`;
-      }
+    const errorText = await response.text();
 
-      return NextResponse.json(
-        { error: parsedError },
-        { status: 400 }
-      );
+    if (!response.ok) {
+      console.error('Gemini API Error Detail:', errorText);
+      let msg = 'Gemini API soʻrovida xatolik';
+      try {
+        const parsed = JSON.parse(errorText);
+        msg = parsed?.error?.message || msg;
+      } catch (e) {}
+
+      return NextResponse.json({ error: msg }, { status: 400 });
     }
 
-    const data = await response.json();
+    const data = JSON.parse(errorText);
     const rawContent = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!rawContent) {
