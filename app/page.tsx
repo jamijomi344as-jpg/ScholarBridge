@@ -6,7 +6,6 @@ interface Recommendation {
   id: number;
   universityName: string;
   country: string;
-  category: string;
   matchPercentage: number;
   scholarshipChance?: string;
   scholarshipChanceDetails?: string;
@@ -65,228 +64,210 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-[#FDFBF7] text-[#1E293B] p-4 md:p-8 font-sans">
-      <div className="max-w-7xl mx-auto">
-        {/* Header Section */}
-        <header className="mb-10 text-center md:text-left">
-          <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight text-slate-900 mb-2">
+    <div className="min-h-screen bg-[#F6F4EC] text-[#232320] font-sans">
+      {/* Header Nav */}
+      <header className="sticky top-0 z-50 bg-[#F6F4EC]/90 backdrop-blur-md border-b border-[#D8D2C0]">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2.5 font-serif font-semibold text-xl text-[#16233F]">
+            <span className="w-8 h-8 rounded-full bg-[#16233F] text-[#D9BE7E] flex items-center justify-center font-mono text-xs font-medium">
+              SB
+            </span>
             ScholarBridge AI
-          </h1>
-          <p className="text-slate-600 text-base md:text-lg">
-            Imkoniyatlaringiz va profilingizga to'liq mos keladigan grantlar hamda universitetlarni tahlil qiling.
-          </p>
-        </header>
+          </div>
+          <a
+            href="#form-section"
+            className="text-xs font-semibold uppercase tracking-wider bg-[#16233F] text-[#F6F4EC] px-4 py-2.5 rounded hover:bg-[#1F3155] transition-colors"
+          >
+            Match Tayyorlash
+          </a>
+        </div>
+      </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Left Panel: Form */}
-          <div className="lg:col-span-5 bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm">
-            <h2 className="text-xl font-bold mb-6 text-slate-900 border-b pb-3">
+      {/* Main Container */}
+      <main className="max-w-6xl mx-auto px-6 py-10">
+        <div className="mb-10 text-center md:text-left">
+          <p className="text-xs font-mono uppercase tracking-widest text-[#5F7A5A] font-semibold mb-2">
+            AI-POWERED COLLEGE MATCHING
+          </p>
+          <h1 className="font-serif text-3xl md:text-5xl text-[#16233F] font-bold mb-3">
+            O'zingizga mos <em>universitetlar va grantlarni</em> toping.
+          </h1>
+          <p className="text-[#5B584E] max-w-2xl text-base">
+            Baholaringiz, test natijalaringiz va byudjetingizni kiriting. Sun'iy intellekt sizga mos keladigan top 10 ta universitetni foiz ko'rinishidagi aniq imkoniyatlar bilan hisoblab beradi.
+          </p>
+        </div>
+
+        <div id="form-section" className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Form Card */}
+          <div className="lg:col-span-5 bg-[#EFEBDD] p-6 md:p-8 rounded-lg border border-[#D8D2C0] shadow-sm">
+            <h2 className="font-serif text-xl font-bold text-[#16233F] mb-6 pb-2 border-b border-[#D8D2C0]">
               Profilingizni kiriting
             </h2>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-2">
-                    GPA (Baholaringiz)
-                  </label>
+                  <label className="block text-xs font-mono text-[#5B584E] mb-1">GPA (Baholar)</label>
                   <input
                     type="text"
                     value={schoolGrade}
                     onChange={(e) => setSchoolGrade(e.target.value)}
-                    placeholder="Masalan: 4.8 yoki 5"
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-sm"
+                    className="w-full px-3 py-2 rounded border border-[#D8D2C0] bg-[#F6F4EC] text-sm focus:outline-none focus:border-[#16233F]"
                     required
                   />
                 </div>
-
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-2">
-                    IELTS Balli
-                  </label>
+                  <label className="block text-xs font-mono text-[#5B584E] mb-1">IELTS Balli</label>
                   <input
                     type="text"
                     value={ielts}
                     onChange={(e) => setIelts(e.target.value)}
-                    placeholder="Masalan: 7.0"
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-sm"
+                    className="w-full px-3 py-2 rounded border border-[#D8D2C0] bg-[#F6F4EC] text-sm focus:outline-none focus:border-[#16233F]"
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-2">
-                  SAT Balli (Ixtiyoriy)
-                </label>
+                <label className="block text-xs font-mono text-[#5B584E] mb-1">SAT Balli (Ixtiyoriy)</label>
                 <input
                   type="text"
                   value={sat}
                   onChange={(e) => setSat(e.target.value)}
-                  placeholder="Masalan: 1450 (mavjud bo'lsa)"
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-sm"
+                  placeholder="Masalan: 1400"
+                  className="w-full px-3 py-2 rounded border border-[#D8D2C0] bg-[#F6F4EC] text-sm focus:outline-none focus:border-[#16233F]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-2">
-                  Qiziqqan Yo'nalish (Major)
-                </label>
+                <label className="block text-xs font-mono text-[#5B584E] mb-1">Yo'nalishingiz (Major)</label>
                 <input
                   type="text"
                   value={majors.join(', ')}
                   onChange={(e) => setMajors(e.target.value.split(',').map((s) => s.trim()))}
-                  placeholder="Masalan: Computer Science, Business"
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-sm"
+                  className="w-full px-3 py-2 rounded border border-[#D8D2C0] bg-[#F6F4EC] text-sm focus:outline-none focus:border-[#16233F]"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-2">
-                  Grant Turi (Funding)
-                </label>
+                <label className="block text-xs font-mono text-[#5B584E] mb-1">Grant Turi</label>
                 <select
                   value={fundingTypes[0]}
                   onChange={(e) => setFundingTypes([e.target.value])}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-sm bg-white"
+                  className="w-full px-3 py-2 rounded border border-[#D8D2C0] bg-[#F6F4EC] text-sm focus:outline-none focus:border-[#16233F]"
                 >
-                  <option value="Full scholarship only">To'liq grant (Full scholarship)</option>
-                  <option value="Partial scholarship">Qisman grant (Partial scholarship)</option>
+                  <option value="Full scholarship only">To'liq grant (Full Scholarship)</option>
+                  <option value="Partial scholarship">Qisman grant (Partial Scholarship)</option>
                   <option value="Any funding option">Har qanday grant turi</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-2">
-                  Maqsadli Davlatlar
-                </label>
+                <label className="block text-xs font-mono text-[#5B584E] mb-1">Maqsadli Davlatlar</label>
                 <input
                   type="text"
                   value={selectedCountries.join(', ')}
                   onChange={(e) => setSelectedCountries(e.target.value.split(',').map((s) => s.trim()))}
-                  placeholder="Masalan: USA, South Korea, Germany"
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-sm"
+                  className="w-full px-3 py-2 rounded border border-[#D8D2C0] bg-[#F6F4EC] text-sm focus:outline-none focus:border-[#16233F]"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3.5 px-6 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 text-sm flex items-center justify-center space-x-2"
+                className="w-full mt-2 py-3 bg-[#16233F] text-[#F6F4EC] font-semibold text-sm rounded hover:bg-[#1F3155] transition-colors disabled:opacity-50"
               >
-                {loading ? (
-                  <span>Tahlil qilinmoqda...</span>
-                ) : (
-                  <span>Universitetlarni topish &rarr;</span>
-                )}
+                {loading ? 'Tahlil qilinmoqda...' : 'Universitetlarni topish →'}
               </button>
             </form>
           </div>
 
-          {/* Right Panel: Results Container */}
-          <div className="lg:col-span-7 bg-[#0F172A] p-6 md:p-8 rounded-2xl text-white min-h-[500px] flex flex-col">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-800 mb-6">
-              <span className="text-xs font-mono tracking-widest text-amber-400 uppercase">
-                AI Analysis Results
+          {/* Results Dossier Panel */}
+          <div className="lg:col-span-7 bg-[#16233F] text-[#F6F4EC] p-6 md:p-8 rounded-lg shadow-xl relative min-h-[500px]">
+            <div className="flex items-center justify-between pb-4 border-b border-[#3A4A6B] mb-6">
+              <span className="font-mono text-xs text-[#D9BE7E] tracking-widest uppercase">
+                Applicant Matches Dossier
               </span>
-              <span className="text-xs bg-slate-800 px-3 py-1 rounded-full text-slate-300 font-mono">
+              <span className="font-mono text-xs text-[#5F7A5A] font-bold bg-[#5F7A5A]/20 px-3 py-1 rounded">
                 {recommendations.length} MATCHES FOUND
               </span>
             </div>
 
             {loading && (
-              <div className="my-auto text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-10 w-10 border-4 border-amber-400 border-t-transparent mb-4"></div>
-                <p className="text-slate-400 text-sm">
-                  Sun'iy intellekt 10 ta eng mos universitet va grant dasturlarini tahlil qilmoqda...
-                </p>
+              <div className="text-center py-20">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-[#D9BE7E] border-t-transparent mb-4"></div>
+                <p className="text-sm text-slate-300 font-mono">10 ta universitet va grant imkoniyatlari hisoblanmoqda...</p>
               </div>
             )}
 
             {error && (
-              <div className="my-auto p-4 bg-red-950/60 border border-red-800 rounded-xl text-red-200 text-center text-sm">
+              <div className="p-4 bg-red-900/40 border border-red-700/50 rounded text-red-200 text-sm">
                 ⚠️ {error}
               </div>
             )}
 
             {!loading && !error && recommendations.length === 0 && (
-              <div className="my-auto text-center py-12 text-slate-400">
-                <p className="text-base">Natijalar hozircha yo'q.</p>
-                <p className="text-xs mt-1 text-slate-500">
-                  Formani to'ldiring va "Universitetlarni topish" tugmasini bosing.
-                </p>
+              <div className="text-center py-20 text-slate-400 font-mono text-sm">
+                Formani to'ldiring va "Universitetlarni topish" tugmasini bosing.
               </div>
             )}
 
-            {/* Universitetlar ro'yxati (10 ta kartochka) */}
+            {/* Recommendations List */}
             {!loading && recommendations.length > 0 && (
-              <div className="space-y-5 overflow-y-auto max-h-[750px] pr-2 custom-scrollbar">
+              <div className="space-y-4 max-h-[650px] overflow-y-auto pr-2">
                 {recommendations.map((rec) => (
                   <div
                     key={rec.id}
-                    className="p-5 rounded-xl bg-slate-800/80 border border-slate-700/80 hover:border-amber-400/50 transition-all duration-200 space-y-3"
+                    className="p-5 bg-[#1F3155]/60 border border-[#3A4A6B] rounded-lg hover:border-[#D9BE7E]/60 transition-colors space-y-3"
                   >
-                    <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div className="flex items-start justify-between gap-2">
                       <div>
-                        <h3 className="text-lg font-bold text-white leading-snug">
+                        <h3 className="font-serif font-bold text-lg text-white">
                           {rec.universityName}
                         </h3>
-                        <p className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
-                          <span>📍 {rec.country}</span>
-                        </p>
+                        <p className="text-xs font-mono text-slate-400">📍 {rec.country}</p>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold px-2.5 py-1 rounded-md bg-amber-400/10 text-amber-400 border border-amber-400/30">
-                          {rec.matchPercentage}% Moslik
-                        </span>
+                      
+                      {/* Moslik Foizi Badge */}
+                      <div className="bg-[#B8923B]/20 border border-[#B8923B]/50 px-3 py-1 rounded text-right">
+                        <span className="block text-[10px] font-mono text-[#D9BE7E] uppercase">Moslik</span>
+                        <span className="font-mono text-sm font-bold text-amber-300">{rec.matchPercentage}%</span>
                       </div>
                     </div>
 
-                    {/* Grant Nomi */}
-                    <div className="text-xs font-medium text-amber-300/90 bg-amber-950/30 px-3 py-1.5 rounded-lg border border-amber-500/20 inline-block">
-                      🎓 Grant: {rec.scholarshipName}
-                    </div>
-
-                    {/* Grant Olish Ehtimoli (Chances) bo'limi */}
-                    {rec.scholarshipChance && (
-                      <div className="p-3 bg-blue-950/50 border border-blue-800/60 rounded-xl space-y-1">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-semibold uppercase tracking-wider text-blue-300">
-                            Grant yutish ehtimoli:
-                          </span>
-                          <span className="px-2.5 py-0.5 text-xs font-bold bg-blue-600 text-white rounded-full">
-                            {rec.scholarshipChance}
-                          </span>
+                    {/* Grant Nomi & Ehtimoli */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                      <div className="bg-[#16233F] p-2.5 rounded border border-[#3A4A6B]">
+                        <span className="text-[#D9BE7E] block font-mono">🎓 Grant dasturi:</span>
+                        <span className="font-medium text-slate-200">{rec.scholarshipName}</span>
+                      </div>
+                      {rec.scholarshipChance && (
+                        <div className="bg-[#5F7A5A]/20 p-2.5 rounded border border-[#5F7A5A]/40">
+                          <span className="text-[#8CB088] block font-mono">📈 Grant yutish ehtimoli:</span>
+                          <span className="font-bold text-white text-sm">{rec.scholarshipChance}</span>
                         </div>
-                        {rec.scholarshipChanceDetails && (
-                          <p className="text-xs text-slate-300 leading-relaxed pt-1 border-t border-blue-900/50 mt-1">
-                            {rec.scholarshipChanceDetails}
-                          </p>
-                        )}
-                      </div>
+                      )}
+                    </div>
+
+                    {/* Ehtimol Sababi va Tahlili */}
+                    {rec.scholarshipChanceDetails && (
+                      <p className="text-xs text-slate-300 bg-[#16233F]/50 p-2.5 rounded border border-[#3A4A6B]/50 leading-relaxed">
+                        🔍 <strong>Imkoniyat tahlili:</strong> {rec.scholarshipChanceDetails}
+                      </p>
                     )}
 
-                    {/* Description */}
-                    <p className="text-xs text-slate-300 leading-relaxed">
-                      {rec.description}
-                    </p>
+                    <p className="text-xs text-slate-300 leading-relaxed">{rec.description}</p>
 
-                    {/* Reason */}
-                    <div className="text-xs text-slate-400 italic bg-slate-900/40 p-2.5 rounded-lg border border-slate-800">
-                      💡 <strong>Nega mos keladi:</strong> {rec.reason}
-                    </div>
-
-                    {/* Rasmiy sayt havolasi */}
                     {rec.website && (
-                      <div className="pt-1 text-right">
+                      <div className="text-right pt-1">
                         <a
                           href={rec.website}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs font-semibold text-amber-400 hover:text-amber-300 underline inline-flex items-center gap-1"
+                          className="text-xs font-mono text-[#D9BE7E] hover:underline"
                         >
-                          Rasmiy saytga o'tish &rarr;
+                          Rasmiy saytga o'tish →
                         </a>
                       </div>
                     )}
@@ -296,7 +277,11 @@ export default function Home() {
             )}
           </div>
         </div>
-      </div>
-    </main>
+      </main>
+
+      <footer className="mt-20 border-t border-[#D8D2C0] py-6 text-center text-xs font-mono text-[#5B584E]">
+        Built in Tashkent · ScholarBridge AI
+      </footer>
+    </div>
   );
 }
