@@ -79,7 +79,7 @@ export default function Home() {
 
         {/* Dossier Card */}
         <div style={{ backgroundColor: '#16233F', color: '#F6F4EC', padding: '28px', borderRadius: '12px', border: '1px solid #3A4A6B', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.2)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #3A4A6B', pb: '12px', marginBottom: '16px', color: '#D9BE7E', fontSize: '12px', fontWeight: 'bold' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #3A4A6B', paddingBottom: '12px', marginBottom: '16px', color: '#D9BE7E', fontSize: '12px', fontWeight: 'bold' }}>
             <span>Applicant Dossier - Live Preview</span>
             <span>SB</span>
           </div>
