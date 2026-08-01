@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 
 export async function POST(req: Request) {
   try {
@@ -14,6 +15,44 @@ export async function POST(req: Request) {
       );
     }
 
+    // Google SDK initsializatsiyasi (Har qanday formatdagi kalitni to'g'ri qabul qiladi)
+    const genAI = new GoogleGenerativeAI(apiKey.trim());
+    
+    const model = genAI.getGenerativeModel({
+      model: "gemini-1.5-flash",
+      generationConfig: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: SchemaType.ARRAY,
+          items: {
+            type: SchemaType.OBJECT,
+            properties: {
+              name: { type: SchemaType.STRING },
+              location: { type: SchemaType.STRING },
+              matchScore: { type: SchemaType.NUMBER },
+              category: { type: SchemaType.STRING },
+              scholarshipName: { type: SchemaType.STRING },
+              coverage: { type: SchemaType.STRING },
+              program: { type: SchemaType.STRING },
+              deadline: { type: SchemaType.STRING },
+              officialWebsite: { type: SchemaType.STRING },
+            },
+            required: [
+              "name",
+              "location",
+              "matchScore",
+              "category",
+              "scholarshipName",
+              "coverage",
+              "program",
+              "deadline",
+              "officialWebsite",
+            ],
+          },
+        },
+      },
+    });
+
     const prompt = `
       Act as an expert international university admissions AI advisor.
       Analyze the following student profile:
@@ -28,73 +67,14 @@ export async function POST(req: Request) {
       Return top 4-5 matching real universities based on this profile.
     `;
 
-    // URL toza va oddiy bo'ladi (?key= olib tashlandi)
-    const apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+    const result = await model.generateContent(prompt);
+    const responseText = result.response.text();
 
-    const response = await fetch(apiUrl, {
-      method: "POST",
-      headers: { 
-        "Content-Type": "application/json",
-        // ✅ AQ... va AIzaSy... kalitlarini xavfsiz qabul qiladigan rasmiy header:
-        "x-goog-api-key": apiKey.trim(),
-      },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: "ARRAY",
-            items: {
-              type: "OBJECT",
-              properties: {
-                name: { type: "STRING" },
-                location: { type: "STRING" },
-                matchScore: { type: "NUMBER" },
-                category: { type: "STRING" },
-                scholarshipName: { type: "STRING" },
-                coverage: { type: "STRING" },
-                program: { type: "STRING" },
-                deadline: { type: "STRING" },
-                officialWebsite: { type: "STRING" },
-              },
-              required: [
-                "name",
-                "location",
-                "matchScore",
-                "category",
-                "scholarshipName",
-                "coverage",
-                "program",
-                "deadline",
-                "officialWebsite",
-              ],
-            },
-          },
-        },
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error("Gemini API Error:", JSON.stringify(errorData, null, 2));
-
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: errorData?.error?.message || "AI API request failed." 
-        },
-        { status: response.status }
-      );
-    }
-
-    const data = await response.json();
-    const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!rawText) {
+    if (!responseText) {
       throw new Error("No output generated from AI model.");
     }
 
-    const universities = JSON.parse(rawText);
+    const universities = JSON.parse(responseText);
 
     return NextResponse.json({ success: true, universities });
   } catch (error: any) {
