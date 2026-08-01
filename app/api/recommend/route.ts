@@ -28,13 +28,16 @@ export async function POST(req: Request) {
       Return top 4-5 matching real universities based on this profile.
     `;
 
-    // URL parse xatolarini oldini olish uchun URL obyekti orqali xavfsiz shakllantirish
-    const apiUrl = new URL("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent");
-    apiUrl.searchParams.append("key", apiKey.trim());
+    // URL toza va oddiy bo'ladi (?key= olib tashlandi)
+    const apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
 
-    const response = await fetch(apiUrl.toString(), {
+    const response = await fetch(apiUrl, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        // ✅ AQ... va AIzaSy... kalitlarini xavfsiz qabul qiladigan rasmiy header:
+        "x-goog-api-key": apiKey.trim(),
+      },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {
@@ -73,7 +76,7 @@ export async function POST(req: Request) {
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error("Gemini API Request Failed:", JSON.stringify(errorData, null, 2));
+      console.error("Gemini API Error:", JSON.stringify(errorData, null, 2));
 
       return NextResponse.json(
         { 
