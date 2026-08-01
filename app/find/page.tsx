@@ -1,501 +1,68 @@
-'use client';
+"use client";
 
-import { useState, useRef, useEffect } from 'react';
-
-// Jahon bo'yicha asosiy va ommabop yo'nalishlar
-const MAJOR_OPTIONS = [
-  'Computer Science & IT',
-  'Software Engineering & AI',
-  'Business Administration & Management',
-  'Economics & Finance',
-  'Data Science & Analytics',
-  'Medicine & Healthcare',
-  'Engineering (Civil, Mechanical, Electrical)',
-  'International Relations & Law',
-  'Marketing & Digital Media',
-  'Graphic Design & Architecture',
-  'Biotechnology & Life Sciences',
-  'Psychology & Social Work'
-];
-
-// Rasmingizdagi to'liq alifbo tartibidagi davlatlar ro'yxati
-const COUNTRY_OPTIONS = [
-  'Barcha davlatlar (All Countries)',
-  'Argentina',
-  'Eron',
-  'Avstriya',
-  'Ozarbayjon',
-  'Bahrayn',
-  'Bangladesh',
-  'Belgiya',
-  'Bruney',
-  'Chexiya',
-  'Daniya',
-  'Estoniya',
-  'Finlandiya',
-  'Gruziya',
-  'Vengriya',
-  'Irlandiya',
-  'Qirg‘iziston',
-  'Latviya',
-  'Marokash',
-  'Niderlandiya',
-  'Yangi Zelandiya',
-  'Norvegiya',
-  'Filippin',
-  'Polsha',
-  'Portugaliya',
-  'Qatar',
-  'Ruminiya',
-  'Ruanda',
-  'Singapur',
-  'Slovakiya',
-  'Ispaniya',
-  'Shvetsiya',
-  'Shveytsariya',
-  'Tailand',
-  'Ukraina',
-  'BAA',
-  'Tayvan',
-  'Yevropa'
-];
+import React, { useState } from "react";
 
 export default function FindPage() {
+  const [formData, setFormData] = useState({
+    country: "Uzbekistan",
+    gpa: "3.85",
+    ielts: "7.5",
+    major: "Computer Science",
+    budget: "Full Scholarship Required",
+  });
+
   const [loading, setLoading] = useState(false);
-  const [recommendations, setRecommendations] = useState<any[]>([]);
-  const [errorMsg, setErrorMsg] = useState('');
-  const [searched, setSearched] = useState(false);
+  const [hasSearched, setHasSearched] = useState(true);
 
-  // Form inputlar
-  const [gpa, setGpa] = useState('');
-  const [ielts, setIelts] = useState('');
-  const [sat, setSat] = useState('');
-  const [userCountry, setUserCountry] = useState('Uzbekistan');
-  const [budget, setBudget] = useState('');
-
-  // Dropdown ochiq/yopiq holatlari
-  const [isMajorOpen, setIsMajorOpen] = useState(false);
-  const [isTargetOpen, setIsTargetOpen] = useState(false);
-
-  // Tanlangan qiymatlar
-  const [selectedMajors, setSelectedMajors] = useState<string[]>([]);
-  const [selectedTargetCountries, setSelectedTargetCountries] = useState<string[]>(['Barcha davlatlar (All Countries)']);
-
-  const majorRef = useRef<HTMLDivElement>(null);
-  const targetRef = useRef<HTMLDivElement>(null);
-
-  // Tashqariga bosganda dropdownlarni yopish
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (majorRef.current && !majorRef.current.contains(event.target as Node)) {
-        setIsMajorOpen(false);
-      }
-      if (targetRef.current && !targetRef.current.contains(event.target as Node)) {
-        setIsTargetOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  // Yo'nalishlarni tanlash
-  const toggleMajor = (major: string) => {
-    if (selectedMajors.includes(major)) {
-      setSelectedMajors(selectedMajors.filter((m) => m !== major));
-    } else {
-      setSelectedMajors([...selectedMajors, major]);
-    }
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
   };
 
-  // Target davlatlarni tanlash
-  const toggleTargetCountry = (country: string) => {
-    if (country === 'Barcha davlatlar (All Countries)') {
-      setSelectedTargetCountries(['Barcha davlatlar (All Countries)']);
-      return;
-    }
-
-    let updated = selectedTargetCountries.filter((c) => c !== 'Barcha davlatlar (All Countries)');
-    if (updated.includes(country)) {
-      updated = updated.filter((c) => c !== country);
-    } else {
-      updated.push(country);
-    }
-
-    if (updated.length === 0) {
-      updated = ['Barcha davlatlar (All Countries)'];
-    }
-    setSelectedTargetCountries(updated);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!gpa || !ielts || selectedMajors.length === 0 || !userCountry || !budget) {
-      alert("Iltimos, barcha majburiy maydonlarni to'ldiring va kamida bitta yo'nalishni tanlang.");
-      return;
-    }
-
     setLoading(true);
-    setErrorMsg('');
-    setSearched(true);
-    setRecommendations([]);
-
-    try {
-      const res = await fetch('/api/recommend', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          schoolGrade: gpa,
-          ielts: ielts,
-          sat: sat,
-          majors: selectedMajors,
-          fundingTypes: [budget],
-          selectedCountries: selectedTargetCountries,
-          userOriginCountry: userCountry,
-          degrees: ['Bakalavr']
-        }),
-      });
-
-      if (!res.ok) throw new Error(`Server xatosi: Status ${res.status}`);
-
-      const data = await res.json();
-
-      if (data.error) {
-        setErrorMsg(data.error);
-      } else {
-        setRecommendations(data.recommendations || []);
-      }
-    } catch (err: any) {
-      console.error('Fetch Error:', err);
-      setErrorMsg(err.message || 'Server bilan bog\'lanishda xatolik yuz berdi');
-    } finally {
+    setTimeout(() => {
       setLoading(false);
-    }
+      setHasSearched(true);
+    }, 1000);
   };
 
   return (
-    <>
-      <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link
-        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,500&display=swap"
-        rel="stylesheet"
-      />
-
-      <div className="sb-page-wrapper">
-        <div className="wrap page">
-          {/* CHAP TARAFI: FORMA */}
-          <div className="form-side">
-            <div className="form-kicker">Build your dossier</div>
-            <h1>Tell us about yourself.</h1>
-            <p className="form-sub">
-              We'll match your profile against real admission patterns and surface the scholarships worth applying to.
-            </p>
-
-            <form className="fieldset" onSubmit={handleSubmit}>
-              {/* GPA (5 ballik) VA IELTS */}
-              <div className="two-col">
-                <div className="field">
-                  <label htmlFor="gpa">GPA (O'rtacha baho)</label>
-                  <span className="hint">5 ballik sistemada (masalan: 4.80)</span>
-                  <input
-                    type="number"
-                    id="gpa"
-                    placeholder="4.80"
-                    min="1"
-                    max="5"
-                    step="0.01"
-                    value={gpa}
-                    onChange={(e) => setGpa(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="field">
-                  <label htmlFor="ielts">IELTS Overall</label>
-                  <span className="hint">e.g. 7.0</span>
-                  <input
-                    type="number"
-                    id="ielts"
-                    placeholder="7.0"
-                    min="0"
-                    max="9"
-                    step="0.5"
-                    value={ielts}
-                    onChange={(e) => setIelts(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* YO'NALISH TANLASH (CUSTOM DROPDOWN) */}
-              <div className="field" ref={majorRef}>
-                <label>Intended Major(s)</label>
-                <div className="custom-dropdown-wrap">
-                  <div
-                    className={`dropdown-trigger ${isMajorOpen ? 'active' : ''}`}
-                    onClick={() => setIsMajorOpen(!isMajorOpen)}
-                  >
-                    <span>
-                      {selectedMajors.length === 0
-                        ? 'Yo‘nalishlarni tanlang...'
-                        : `${selectedMajors.length} ta yo‘nalish tanlandi`}
-                    </span>
-                    <span className="arrow">▾</span>
-                  </div>
-
-                  {isMajorOpen && (
-                    <div className="dropdown-menu">
-                      {MAJOR_OPTIONS.map((major) => {
-                        const checked = selectedMajors.includes(major);
-                        return (
-                          <label key={major} className="dropdown-item">
-                            <input
-                              type="checkbox"
-                              checked={checked}
-                              onChange={() => toggleMajor(major)}
-                            />
-                            <span>{major}</span>
-                          </label>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* TARGET DAVLATLARNI TANLASH (RASMINGIZDAGI BARCHA DAVLATLAR) */}
-              <div className="field" ref={targetRef}>
-                <label>Target Countries (Grant kutilayotgan davlatlar)</label>
-                <div className="custom-dropdown-wrap">
-                  <div
-                    className={`dropdown-trigger ${isTargetOpen ? 'active' : ''}`}
-                    onClick={() => setIsTargetOpen(!isTargetOpen)}
-                  >
-                    <span>
-                      {selectedTargetCountries.length === 0
-                        ? 'Davlatlarni tanlang...'
-                        : selectedTargetCountries.join(', ')}
-                    </span>
-                    <span className="arrow">▾</span>
-                  </div>
-
-                  {isTargetOpen && (
-                    <div className="dropdown-menu scrollable">
-                      {COUNTRY_OPTIONS.map((country) => {
-                        const checked = selectedTargetCountries.includes(country);
-                        return (
-                          <label key={country} className="dropdown-item">
-                            <input
-                              type="checkbox"
-                              checked={checked}
-                              onChange={() => toggleTargetCountry(country)}
-                            />
-                            <span>{country}</span>
-                          </label>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* USER RESIDENCE COUNTRY */}
-              <div className="field">
-                <label htmlFor="userCountry">Your Country of Residence</label>
-                <div className="select-wrap">
-                  <select
-                    id="userCountry"
-                    value={userCountry}
-                    onChange={(e) => setUserCountry(e.target.value)}
-                    required
-                  >
-                    <option value="Uzbekistan">Uzbekistan</option>
-                    <option value="Kazakhstan">Kazakhstan</option>
-                    <option value="Kyrgyzstan">Kyrgyzstan</option>
-                    <option value="Tajikistan">Tajikistan</option>
-                    <option value="Turkmenistan">Turkmenistan</option>
-                    <option value="Azerbaijan">Azerbaijan</option>
-                    <option value="Turkey">Turkey</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* SCHOLARSHIP NEED */}
-              <div className="field">
-                <label htmlFor="budget">Scholarship Need</label>
-                <div className="select-wrap">
-                  <select
-                    id="budget"
-                    value={budget}
-                    onChange={(e) => setBudget(e.target.value)}
-                    required
-                  >
-                    <option value="" disabled>
-                      Select your budget need
-                    </option>
-                    <option value="Full scholarship only">Full scholarship only (To'liq grant)</option>
-                    <option value="Partial scholarship">Partial scholarship (Qisman grant)</option>
-                    <option value="Any funding helps">Any funding helps (Har qanday moliya yordami)</option>
-                    <option value="Self-funded">Self-funded (O'z hisobidan)</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* SAT SCORE */}
-              <div className="field">
-                <label htmlFor="sat">
-                  SAT Score <span style={{ fontWeight: 400, color: 'var(--ink-soft)' }}>(optional)</span>
-                </label>
-                <input
-                  type="number"
-                  id="sat"
-                  placeholder="e.g. 1450"
-                  min="400"
-                  max="1600"
-                  value={sat}
-                  onChange={(e) => setSat(e.target.value)}
-                />
-              </div>
-
-              {/* SUBMIT BUTTON */}
-              <button className="btn-submit" type="submit" disabled={loading}>
-                {!loading ? (
-                  <>
-                    <svg viewBox="0 0 18 18" fill="none">
-                      <path
-                        d="M3.5 9h11M10 4.5L14.5 9 10 13.5"
-                        stroke="currentColor"
-                        strokeWidth="1.7"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                    Find my universities
-                  </>
-                ) : (
-                  <>
-                    <div className="btn-spinner" />
-                    Analyzing…
-                  </>
-                )}
-              </button>
-            </form>
-          </div>
-
-          {/* O'NG TARAFI: AI RESULT PANEL */}
-          <div className="result-side">
-            <div className="result-panel">
-              <div className="rp-head">
-                <span>AI Analysis</span>
-                <span className={`rp-status ${loading ? 'analyzing' : ''}`}>
-                  {loading
-                    ? 'Analyzing…'
-                    : searched
-                    ? `${recommendations.length} matches found`
-                    : 'Waiting'}
-                </span>
-              </div>
-
-              {!searched && !loading && (
-                <div className="rp-empty">
-                  <div className="icon">?</div>
-                  <p>Fill in your profile and we'll find your best-fit universities.</p>
-                </div>
-              )}
-
-              {loading && (
-                <div className="rp-loading" style={{ display: 'flex' }}>
-                  <div className="spinner"></div>
-                  <p>Analyzing your profile & scholarship matching…</p>
-                </div>
-              )}
-
-              {!loading && errorMsg && (
-                <div className="rp-error" style={{ display: 'flex' }}>
-                  <p>⚠️ {errorMsg}</p>
-                </div>
-              )}
-
-              {!loading && searched && !errorMsg && (
-                <div className="rp-results" style={{ display: 'flex' }}>
-                  {recommendations.length === 0 ? (
-                    <div className="rp-empty">
-                      <p>No matching universities found for this profile.</p>
-                    </div>
-                  ) : (
-                    recommendations.map((u, idx) => {
-                      const category =
-                        u.category?.toLowerCase() ||
-                        (u.matchPercentage > 85
-                          ? 'safety'
-                          : u.matchPercentage > 70
-                          ? 'target'
-                          : 'reach');
-
-                      return (
-                        <div key={idx} className="uni-card">
-                          <div className="uni-top">
-                            <div className="uni-name">{u.universityName || u.name}</div>
-                            <span className={`badge ${category}`}>{category}</span>
-                          </div>
-                          <p style={{ fontSize: '0.78rem', color: 'var(--gold-light)', marginBottom: '4px' }}>
-                            📍 {u.country || 'International'}
-                          </p>
-                          <div className="uni-detail">
-                            {u.reason || u.description || 'Fits your academic and funding requirements.'}
-                          </div>
-                          {u.website && u.website !== '#' && (
-                            <a
-                              href={u.website}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              style={{
-                                color: 'var(--gold-light)',
-                                fontSize: '0.78rem',
-                                marginTop: '8px',
-                                display: 'inline-block',
-                              }}
-                            >
-                              Visit Website ↗
-                            </a>
-                          )}
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
+    <div
+      style={{
+        background: "#F7F8FC",
+        color: "#1E2A4A",
+        fontFamily: "'Inter', sans-serif",
+        lineHeight: 1.6,
+        WebkitFontSmoothing: "antialiased",
+        minHeight: "100vh",
+        margin: 0,
+        padding: 0,
+      }}
+    >
       <style jsx global>{`
-        :root {
-          --navy: #16233f;
-          --navy-2: #1f3155;
-          --paper: #f6f4ec;
-          --paper-2: #efebdd;
-          --gold: #b8923b;
-          --gold-light: #d9be7e;
-          --sage: #5f7a5a;
-          --ink: #232320;
-          --ink-soft: #5b584e;
-          --rule: #d8d2c0;
-          --rule-dark: #3a4a6b;
-          --err: #b84040;
+        @import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
+
+        *,
+        *::before,
+        *::after {
+          box-sizing: border-box;
+          margin: 0;
+          padding: 0;
         }
 
-        .sb-page-wrapper {
-          background: var(--paper);
-          color: var(--ink);
-          font-family: 'Inter', sans-serif;
-          min-height: 100vh;
-          line-height: 1.5;
+        a {
+          color: inherit;
+          text-decoration: none;
         }
 
         .wrap {
-          max-width: 1100px;
+          max-width: 1160px;
           margin: 0 auto;
           padding: 0 32px;
         }
@@ -506,447 +73,605 @@ export default function FindPage() {
           }
         }
 
-        .page {
+        /* NAV */
+        nav {
+          position: sticky;
+          top: 0;
+          z-index: 100;
+          background: rgba(247, 248, 252, 0.88);
+          backdrop-filter: blur(16px);
+          border-bottom: 1px solid #e2e6f0;
+        }
+        .nav-inner {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          height: 66px;
+        }
+        .logo {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          font-family: "Instrument Serif", serif;
+          font-size: 1.2rem;
+          color: #1e2a4a;
+        }
+        .logo-mark {
+          width: 34px;
+          height: 34px;
+          border-radius: 9px;
+          background: #1e2a4a;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-family: "JetBrains Mono", monospace;
+          font-size: 0.65rem;
+          font-weight: 500;
+          color: #aae4fe;
+          flex-shrink: 0;
+        }
+        .nav-link-back {
+          font-size: 0.87rem;
+          color: #5a6882;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-weight: 500;
+          transition: color 0.15s;
+        }
+        .nav-link-back:hover {
+          color: #1e2a4a;
+        }
+
+        /* LAYOUT */
+        .find-container {
+          padding: 48px 0 80px;
           display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 48px;
-          padding: 40px 0 80px;
+          grid-template-columns: 340px 1fr;
+          gap: 32px;
           align-items: start;
         }
 
-        @media (max-width: 860px) {
-          .page {
+        @media (max-width: 900px) {
+          .find-container {
             grid-template-columns: 1fr;
           }
         }
 
-        .form-kicker {
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 0.76rem;
-          letter-spacing: 0.1em;
-          text-transform: uppercase;
-          color: var(--sage);
-          margin-bottom: 14px;
-          display: flex;
-          align-items: center;
-          gap: 10px;
+        /* SIDEBAR FORM CARD */
+        .form-card {
+          background: #fff;
+          border: 1px solid #dde3ef;
+          border-radius: 16px;
+          padding: 24px;
+          box-shadow: 0 4px 20px rgba(30, 42, 74, 0.04);
+          position: sticky;
+          top: 90px;
         }
 
-        .form-kicker::before {
-          content: '';
-          width: 20px;
-          height: 1px;
-          background: var(--sage);
-        }
-
-        h1 {
-          font-family: 'Source Serif 4', serif;
-          font-weight: 600;
-          font-size: clamp(1.7rem, 3vw, 2.35rem);
-          letter-spacing: -0.015em;
-          color: var(--navy);
-          margin-bottom: 8px;
-          line-height: 1.1;
+        .form-title {
+          font-family: "Instrument Serif", serif;
+          font-size: 1.5rem;
+          color: #1e2a4a;
+          margin-bottom: 6px;
         }
 
         .form-sub {
-          color: var(--ink-soft);
-          font-size: 0.96rem;
-          margin-bottom: 36px;
-          max-width: 44ch;
+          font-size: 0.82rem;
+          color: #8a96aa;
+          margin-bottom: 20px;
         }
 
-        .fieldset {
-          display: flex;
-          flex-direction: column;
-          gap: 22px;
+        .form-group {
+          margin-bottom: 16px;
         }
 
-        .field {
-          display: flex;
-          flex-direction: column;
-          gap: 7px;
+        .form-label {
+          display: block;
+          font-family: "JetBrains Mono", monospace;
+          font-size: 0.7rem;
+          letter-spacing: 0.05em;
+          text-transform: uppercase;
+          color: #5a6882;
+          margin-bottom: 6px;
         }
 
-        .field label {
-          font-size: 0.87rem;
-          font-weight: 600;
-          color: var(--navy);
-          letter-spacing: 0.01em;
-        }
-
-        .field .hint {
-          font-size: 0.8rem;
-          color: var(--ink-soft);
-          margin-top: -3px;
-        }
-
-        .field input,
-        .field select {
+        .form-input,
+        .form-select {
           width: 100%;
-          padding: 13px 14px;
-          border: 1.5px solid var(--rule);
-          border-radius: 3px;
-          background: white;
-          color: var(--ink);
-          font-family: 'Inter', sans-serif;
-          font-size: 0.97rem;
-          transition: border-color 0.18s ease, box-shadow 0.18s ease;
-          appearance: none;
-        }
-
-        .field input:focus,
-        .field select:focus {
-          outline: none;
-          border-color: var(--navy);
-          box-shadow: 0 0 0 3px rgba(22, 35, 63, 0.1);
-        }
-
-        /* CUSTOM DROPDOWN STYLES */
-        .custom-dropdown-wrap {
-          position: relative;
-          width: 100%;
-        }
-
-        .dropdown-trigger {
-          width: 100%;
-          padding: 13px 14px;
-          border: 1.5px solid var(--rule);
-          border-radius: 3px;
-          background: white;
-          color: var(--ink);
-          font-size: 0.97rem;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          cursor: pointer;
-          user-select: none;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-
-        .dropdown-trigger.active {
-          border-color: var(--navy);
-          box-shadow: 0 0 0 3px rgba(22, 35, 63, 0.1);
-        }
-
-        .dropdown-trigger .arrow {
-          color: var(--ink-soft);
-          font-size: 0.85rem;
-          margin-left: 10px;
-        }
-
-        .dropdown-menu {
-          position: absolute;
-          top: calc(100% + 4px);
-          left: 0;
-          right: 0;
-          background: white;
-          border: 1.5px solid var(--rule);
-          border-radius: 3px;
-          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-          z-index: 100;
-          display: flex;
-          flex-direction: column;
-          padding: 6px 0;
-        }
-
-        .dropdown-menu.scrollable {
-          max-height: 220px;
-          overflow-y: auto;
-        }
-
-        .dropdown-item {
-          display: flex;
-          align-items: center;
-          gap: 10px;
           padding: 10px 14px;
-          font-size: 0.92rem;
-          color: var(--ink);
-          cursor: pointer;
-          transition: background 0.15s ease;
+          background: #f7f9fd;
+          border: 1px solid #dde3ef;
+          border-radius: 8px;
+          font-family: "Inter", sans-serif;
+          font-size: 0.9rem;
+          color: #1e2a4a;
+          outline: none;
+          transition: border-color 0.15s, box-shadow 0.15s;
         }
 
-        .dropdown-item:hover {
-          background: var(--paper-2);
-        }
-
-        .dropdown-item input[type='checkbox'] {
-          width: 16px;
-          height: 16px;
-          accent-color: var(--navy);
-          cursor: pointer;
-        }
-
-        .select-wrap {
-          position: relative;
-        }
-
-        .select-wrap select {
-          padding-right: 36px;
-        }
-
-        .select-wrap::after {
-          content: '▾';
-          position: absolute;
-          right: 13px;
-          top: 50%;
-          transform: translateY(-50%);
-          color: var(--ink-soft);
-          pointer-events: none;
-          font-size: 0.85rem;
-        }
-
-        .two-col {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 14px;
-        }
-
-        @media (max-width: 480px) {
-          .two-col {
-            grid-template-columns: 1fr;
-          }
+        .form-input:focus,
+        .form-select:focus {
+          border-color: #3b6fe0;
+          box-shadow: 0 0 0 3px rgba(59, 111, 224, 0.12);
+          background: #fff;
         }
 
         .btn-submit {
-          margin-top: 10px;
           width: 100%;
-          background: var(--navy);
-          color: var(--paper);
-          font-weight: 700;
-          font-size: 1rem;
-          padding: 17px 24px;
-          border-radius: 3px;
+          margin-top: 10px;
+          background: #1e2a4a;
+          color: #fff;
+          font-size: 0.92rem;
+          font-weight: 600;
+          padding: 12px;
+          border-radius: 9px;
           border: none;
           cursor: pointer;
+          transition: background 0.18s, transform 0.15s;
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 10px;
-          transition: background 0.18s ease, transform 0.18s ease;
+          gap: 8px;
         }
 
-        .btn-submit:hover:not(:disabled) {
-          background: var(--navy-2);
+        .btn-submit:hover {
+          background: #2a3a60;
           transform: translateY(-1px);
         }
 
-        .btn-submit:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-          transform: none;
-        }
-
-        .btn-submit svg {
-          width: 18px;
-          height: 18px;
-        }
-
-        .btn-spinner {
-          width: 18px;
-          height: 18px;
-          border: 2px solid rgba(246, 244, 236, 0.3);
-          border-top-color: #f6f4ec;
-          border-radius: 50%;
-          animation: spin 0.9s linear infinite;
-        }
-
-        .result-side {
-          position: sticky;
-          top: 40px;
-        }
-
-        .result-panel {
-          background: var(--navy);
-          border-radius: 6px;
-          padding: 28px 26px 24px;
-          position: relative;
-          min-height: 420px;
+        /* RESULTS AREA */
+        .results-header {
           display: flex;
-          flex-direction: column;
-        }
-
-        .result-panel::before {
-          content: '';
-          position: absolute;
-          inset: 8px;
-          border: 1px solid rgba(217, 190, 126, 0.22);
-          border-radius: 3px;
-          pointer-events: none;
-        }
-
-        .rp-head {
-          display: flex;
+          align-items: center;
           justify-content: space-between;
-          align-items: center;
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 0.72rem;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          color: var(--gold-light);
-          margin-bottom: 22px;
+          margin-bottom: 20px;
+          padding-bottom: 12px;
+          border-bottom: 1px solid #dde3ef;
         }
 
-        .rp-status {
-          font-size: 0.72rem;
+        .results-title {
+          font-family: "Instrument Serif", serif;
+          font-size: 1.8rem;
+          color: #1e2a4a;
+        }
+
+        .results-count {
+          font-family: "JetBrains Mono", monospace;
+          font-size: 0.75rem;
+          background: #eef3fd;
+          color: #3b6fe0;
+          border: 1px solid #c5d5f8;
           padding: 4px 10px;
-          border-radius: 20px;
-          border: 1px solid rgba(217, 190, 126, 0.35);
-          color: var(--gold-light);
-          font-family: 'IBM Plex Mono', monospace;
+          border-radius: 100px;
         }
 
-        .rp-status.analyzing {
-          border-color: rgba(95, 122, 90, 0.6);
-          color: #8cb088;
-        }
-
-        .rp-empty {
-          flex: 1;
+        .matches-list {
           display: flex;
           flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          text-align: center;
-          gap: 14px;
+          gap: 16px;
         }
 
-        .rp-empty .icon {
-          width: 52px;
-          height: 52px;
-          border-radius: 50%;
-          border: 1.5px solid rgba(217, 190, 126, 0.3);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: var(--gold-light);
-          opacity: 0.6;
-          font-size: 1.4rem;
-          font-family: 'Source Serif 4', serif;
-          font-style: italic;
+        .match-card {
+          background: #fff;
+          border: 1px solid #dde3ef;
+          border-radius: 14px;
+          padding: 20px;
+          transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
         }
 
-        .rp-empty p {
-          color: rgba(246, 244, 236, 0.42);
-          font-size: 0.9rem;
-          max-width: 26ch;
+        .match-card:hover {
+          border-color: #aae4fe;
+          box-shadow: 0 6px 20px rgba(30, 42, 74, 0.06);
+          transform: translateY(-2px);
         }
 
-        .rp-loading {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 18px;
+        .match-card.featured {
+          border-color: #c5d5f8;
+          background: #f7f9fd;
         }
 
-        .spinner {
-          width: 36px;
-          height: 36px;
-          border: 2px solid rgba(217, 190, 126, 0.2);
-          border-top-color: var(--gold-light);
-          border-radius: 50%;
-          animation: spin 0.9s linear infinite;
-        }
-
-        @keyframes spin {
-          to {
-            transform: rotate(360deg);
-          }
-        }
-
-        .rp-loading p {
-          color: rgba(246, 244, 236, 0.55);
-          font-size: 0.88rem;
-          font-family: 'IBM Plex Mono', monospace;
-          letter-spacing: 0.04em;
-        }
-
-        .rp-results {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          gap: 14px;
-          max-height: 540px;
-          overflow-y: auto;
-        }
-
-        .uni-card {
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          border-radius: 4px;
-          padding: 14px 16px;
-        }
-
-        .uni-top {
+        .card-top {
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
-          gap: 10px;
-          margin-bottom: 4px;
+          gap: 16px;
+          margin-bottom: 12px;
         }
 
-        .uni-name {
-          font-size: 0.97rem;
-          font-weight: 600;
-          color: var(--paper);
-          line-height: 1.3;
+        .uni-title {
+          font-family: "Instrument Serif", serif;
+          font-size: 1.4rem;
+          color: #1e2a4a;
+          line-height: 1.2;
         }
 
-        .badge {
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 0.7rem;
-          padding: 3px 9px;
-          border-radius: 20px;
-          white-space: nowrap;
-          flex-shrink: 0;
+        .uni-location {
+          font-size: 0.8rem;
+          color: #8a96aa;
           margin-top: 2px;
-          text-transform: lowercase;
         }
 
-        .badge.reach {
-          background: rgba(184, 68, 68, 0.2);
-          color: #e8908a;
-          border: 1px solid rgba(184, 68, 68, 0.35);
+        .match-badge-wrap {
+          text-align: right;
         }
 
-        .badge.target {
-          background: rgba(95, 122, 90, 0.2);
-          color: #8cb088;
-          border: 1px solid rgba(95, 122, 90, 0.4);
+        .match-pct-val {
+          font-family: "JetBrains Mono", monospace;
+          font-size: 1.2rem;
+          font-weight: 700;
         }
 
-        .badge.safety {
-          background: rgba(184, 146, 59, 0.2);
-          color: var(--gold-light);
-          border: 1px solid rgba(184, 146, 59, 0.4);
+        .match-pct-val.vhigh {
+          color: #0d9488;
+        }
+        .match-pct-val.high {
+          color: #16a34a;
+        }
+        .match-pct-val.mid {
+          color: #d97706;
         }
 
-        .uni-detail {
-          font-size: 0.82rem;
-          color: rgba(246, 244, 236, 0.58);
-          line-height: 1.5;
+        .uni-tag {
+          font-size: 0.68rem;
+          padding: 3px 8px;
+          border-radius: 100px;
+          font-family: "JetBrains Mono", monospace;
+          display: inline-block;
+          margin-top: 4px;
+        }
+        .uni-tag.reach {
+          background: #fef3c7;
+          color: #92400e;
+          border: 1px solid #fde68a;
+        }
+        .uni-tag.target {
+          background: #eef3fd;
+          color: #1d4ed8;
+          border: 1px solid #c5d5f8;
+        }
+        .uni-tag.safety {
+          background: #ecfdf5;
+          color: #065f46;
+          border: 1px solid #a7f3d0;
         }
 
-        .rp-error {
-          flex: 1;
+        .card-details {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+          gap: 12px;
+          padding: 12px;
+          background: #f7f8fc;
+          border-radius: 8px;
+          border: 1px solid #e2e6f0;
+          margin-top: 12px;
+        }
+
+        .detail-item {
           display: flex;
           flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 10px;
-          text-align: center;
         }
 
-        .rp-error p {
-          color: #e8908a;
-          font-size: 0.9rem;
-          max-width: 28ch;
+        .detail-label {
+          font-size: 0.7rem;
+          color: #8a96aa;
+          font-family: "JetBrains Mono", monospace;
+        }
+
+        .detail-val {
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: #1e2a4a;
+        }
+
+        .card-footer {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-top: 16px;
+          padding-top: 12px;
+          border-top: 1px solid #edf0f7;
+        }
+
+        .deadline-text {
+          font-size: 0.8rem;
+          color: #5a6882;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+
+        .btn-apply {
+          font-size: 0.82rem;
+          font-weight: 600;
+          color: #3b6fe0;
+          border: 1px solid #c5d5f8;
+          background: #eef3fd;
+          padding: 6px 14px;
+          border-radius: 6px;
+          transition: all 0.15s;
+        }
+
+        .btn-apply:hover {
+          background: #3b6fe0;
+          color: #fff;
+        }
+
+        /* FOOTER */
+        footer {
+          border-top: 1px solid #dde3ef;
+          padding: 28px 0;
+          background: #fff;
+        }
+        .foot {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 12px;
+        }
+        .foot-right {
+          font-family: "JetBrains Mono", monospace;
+          font-size: 0.72rem;
+          color: #a0aabb;
+          display: flex;
+          gap: 20px;
         }
       `}</style>
-    </>
+
+      {/* NAVBAR */}
+      <nav>
+        <div className="wrap nav-inner">
+          <a href="/" className="logo">
+            <div className="logo-mark">SB</div>
+            ScholarBridge
+            <span
+              style={{
+                color: "#AAE4FE",
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: "0.7rem",
+                marginLeft: "5px",
+                background: "#1E2A4A",
+                padding: "1px 5px",
+                borderRadius: "4px",
+              }}
+            >
+              AI
+            </span>
+          </a>
+          <a href="/" className="nav-link-back">
+            ← Back to Home
+          </a>
+        </div>
+      </nav>
+
+      {/* MAIN CONTENT */}
+      <div className="wrap find-container">
+        {/* SIDEBAR FORM */}
+        <div className="form-card">
+          <h1 className="form-title">Match Engine</h1>
+          <p className="form-sub">
+            Update your profile metrics to generate accurate admission
+            probabilities.
+          </p>
+
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label className="form-label">Country of Origin</label>
+              <input
+                type="text"
+                name="country"
+                className="form-input"
+                value={formData.country}
+                onChange={handleInputChange}
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">GPA (Out of 4.0)</label>
+              <input
+                type="text"
+                name="gpa"
+                className="form-input"
+                value={formData.gpa}
+                onChange={handleInputChange}
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">IELTS / TOEFL Score</label>
+              <input
+                type="text"
+                name="ielts"
+                className="form-input"
+                value={formData.ielts}
+                onChange={handleInputChange}
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Intended Major</label>
+              <input
+                type="text"
+                name="major"
+                className="form-input"
+                value={formData.major}
+                onChange={handleInputChange}
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Funding Preference</label>
+              <select
+                name="budget"
+                className="form-select"
+                value={formData.budget}
+                onChange={handleInputChange}
+              >
+                <option value="Full Scholarship Required">
+                  Full Scholarship Required
+                </option>
+                <option value="Partial Aid Needed">Partial Aid Needed</option>
+                <option value="Self-Funded">Self-Funded</option>
+              </select>
+            </div>
+
+            <button type="submit" className="btn-submit" disabled={loading}>
+              {loading ? "Analyzing profile..." : "Recalculate Matches →"}
+            </button>
+          </form>
+        </div>
+
+        {/* RESULTS AREA */}
+        <div>
+          <div className="results-header">
+            <div>
+              <h2 className="results-title">Matched Universities</h2>
+            </div>
+            <span className="results-count">3 Recommendations</span>
+          </div>
+
+          {hasSearched && (
+            <div className="matches-list">
+              {/* CARD 1 */}
+              <div className="match-card featured">
+                <div className="card-top">
+                  <div>
+                    <h3 className="uni-title">Seoul National University</h3>
+                    <div className="uni-location">📍 Seoul, South Korea</div>
+                  </div>
+                  <div className="match-badge-wrap">
+                    <div className="match-pct-val vhigh">91% Match</div>
+                    <span className="uni-tag safety">Safety School</span>
+                  </div>
+                </div>
+
+                <div className="card-details">
+                  <div className="detail-item">
+                    <span className="detail-label">Scholarship</span>
+                    <span className="detail-val">Global Korea (GKS) Full</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Coverage</span>
+                    <span className="detail-val">100% Tuition + Stipend</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Program</span>
+                    <span className="detail-val">{formData.major}</span>
+                  </div>
+                </div>
+
+                <div className="card-footer">
+                  <span className="deadline-text">⏳ Deadline: Nov 30, 2026</span>
+                  <a
+                    href="https://snu.ac.kr"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn-apply"
+                  >
+                    View Program →
+                  </a>
+                </div>
+              </div>
+
+              {/* CARD 2 */}
+              <div className="match-card">
+                <div className="card-top">
+                  <div>
+                    <h3 className="uni-title">University of Toronto</h3>
+                    <div className="uni-location">📍 Toronto, Canada</div>
+                  </div>
+                  <div className="match-badge-wrap">
+                    <div className="match-pct-val high">87% Match</div>
+                    <span className="uni-tag target">Target School</span>
+                  </div>
+                </div>
+
+                <div className="card-details">
+                  <div className="detail-item">
+                    <span className="detail-label">Scholarship</span>
+                    <span className="detail-val">Lester B. Pearson</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Coverage</span>
+                    <span className="detail-val">Full Tuition + Books</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Program</span>
+                    <span className="detail-val">{formData.major}</span>
+                  </div>
+                </div>
+
+                <div className="card-footer">
+                  <span className="deadline-text">⏳ Deadline: Dec 01, 2026</span>
+                  <a
+                    href="https://utoronto.ca"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn-apply"
+                  >
+                    View Program →
+                  </a>
+                </div>
+              </div>
+
+              {/* CARD 3 */}
+              <div className="match-card">
+                <div className="card-top">
+                  <div>
+                    <h3 className="uni-title">TU Delft</h3>
+                    <div className="uni-location">📍 Delft, Netherlands</div>
+                  </div>
+                  <div className="match-badge-wrap">
+                    <div className="match-pct-val mid">74% Match</div>
+                    <span className="uni-tag reach">Reach School</span>
+                  </div>
+                </div>
+
+                <div className="card-details">
+                  <div className="detail-item">
+                    <span className="detail-label">Scholarship</span>
+                    <span className="detail-val">Justus & Louise van Effen</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Coverage</span>
+                    <span className="detail-val">Full Tuition + Living</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Program</span>
+                    <span className="detail-val">{formData.major}</span>
+                  </div>
+                </div>
+
+                <div className="card-footer">
+                  <span className="deadline-text">⏳ Deadline: Jan 15, 2027</span>
+                  <a
+                    href="https://tudelft.nl"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn-apply"
+                  >
+                    View Program →
+                  </a>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* FOOTER */}
+      <footer>
+        <div className="wrap foot">
+          <div className="logo">
+            <div className="logo-mark">SB</div>ScholarBridge
+          </div>
+          <div className="foot-right">
+            <span>Built in Tashkent</span>
+            <span>© 2026 ScholarBridge AI</span>
+          </div>
+        </div>
+      </footer>
+    </div>
   );
 }
