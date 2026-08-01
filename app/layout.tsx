@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
-import Navbar from '@/components/Navbar';
+import './globals.css'; // <-- SHU QATOR BORLIGIGA ISHONCH HOSIL QILING!
 
 export const metadata: Metadata = {
-  title: 'ScholarBridge AI — Universitet va Grantlar Platformasi',
-  description: "AI yordamida o'zingizga mos keluvchi TOP universitetlar va to'liq grantlarni toping",
+  title: 'ScholarBridge AI',
+  description: 'Find the universities that would actually want you',
 };
 
 export default function RootLayout({
@@ -12,11 +12,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="uz">
-      <body style={{ margin: 0, padding: 0 }}>
-        <Navbar />
-        <main>{children}</main>
-      </body>
+    <html lang="en">
+      <body>{children}</body>
     </html>
   );
 }
