@@ -1,12 +1,8 @@
-@import "tailwindcss";
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Paper background & default font */
 body {
-  background-color: #F6F4EC !important;
-  color: #232320 !important;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #F6F4EC;
+  color: #232320;
 }
