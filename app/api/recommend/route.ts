@@ -9,7 +9,7 @@ export async function POST(req: Request) {
 
     if (!apiKey) {
       return NextResponse.json(
-        { success: false, error: "API key is missing on backend." },
+        { success: false, error: "API key is missing on backend (.env.local)." },
         { status: 500 }
       );
     }
@@ -28,10 +28,11 @@ export async function POST(req: Request) {
       Return top 4-5 matching real universities based on this profile.
     `;
 
-    // Template literal backtick (`) bilan to'g'rilangan URL
-    const apiUrl = `[https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$](https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$){apiKey}`;
+    // URL parse xatolarini oldini olish uchun URL obyekti orqali xavfsiz shakllantirish
+    const apiUrl = new URL("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent");
+    apiUrl.searchParams.append("key", apiKey.trim());
 
-    const response = await fetch(apiUrl, {
+    const response = await fetch(apiUrl.toString(), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -73,7 +74,7 @@ export async function POST(req: Request) {
     if (!response.ok) {
       const errorData = await response.json();
       console.error("Gemini API Request Failed:", JSON.stringify(errorData, null, 2));
-      
+
       return NextResponse.json(
         { 
           success: false, 
@@ -94,7 +95,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, universities });
   } catch (error: any) {
-    console.error("AI Recommend Route Error:", error);
+    console.error("AI Recommend Route Catch Error:", error);
     return NextResponse.json(
       { success: false, error: error?.message || "Failed to generate recommendations." },
       { status: 500 }
