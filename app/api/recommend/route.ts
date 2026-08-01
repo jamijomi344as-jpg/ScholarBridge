@@ -35,9 +35,9 @@ export async function POST(req: Request) {
       Return top 4-5 matching real universities based on this profile.
     `;
 
-    // ✅ Model nomi rasmiy "gemini-1.5-flash" ga to'g'rilandi
+    // ✅ Model nomi gemini-2.0-flash ga o'zgartirildi
     const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
+      model: "gemini-2.0-flash",
       generationConfig: {
         responseMimeType: "application/json",
         responseSchema: {
