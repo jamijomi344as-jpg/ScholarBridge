@@ -58,6 +58,7 @@ export default function FindPage() {
   const [formData, setFormData] = useState({
     country: "Uzbekistan",
     gpa: "4.8",
+    sat: "1450",
     ielts: "7.5",
     budget: "Full Scholarship Required",
   });
@@ -294,6 +295,17 @@ export default function FindPage() {
             </div>
 
             <div className="form-group">
+              <label className="form-label">SAT Score (Optional)</label>
+              <input
+                type="text"
+                className="form-input"
+                placeholder="e.g. 1450 or N/A"
+                value={formData.sat}
+                onChange={(e) => setFormData({ ...formData, sat: e.target.value })}
+              />
+            </div>
+
+            <div className="form-group">
               <label className="form-label">IELTS / TOEFL Score</label>
               <input
                 type="text"
@@ -395,7 +407,7 @@ export default function FindPage() {
                         {uni.matchScore}% Match
                       </div>
                       <span className={`uni-tag ${uni.category.toLowerCase()}`}>
-                        {uni.category} School
+                        {uni.category} University
                       </span>
                     </div>
                   </div>
