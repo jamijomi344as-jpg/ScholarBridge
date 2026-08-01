@@ -9,7 +9,7 @@ export async function POST(req: Request) {
 
     if (!apiKey) {
       return NextResponse.json(
-        { success: false, error: "API key is missing on backend (.env.local)." },
+        { success: false, error: "API key is missing on backend." },
         { status: 500 }
       );
     }
@@ -25,55 +25,55 @@ export async function POST(req: Request) {
       - Target Destination Countries: ${Array.isArray(targetCountries) ? targetCountries.join(", ") : targetCountries}
       - Budget / Financial Preference: ${budget}
 
-      Return top 4-5 matching real universities.
+      Return top 4-5 matching real universities based on this profile.
     `;
 
-    // Gemini API v1beta call with Structured JSON Schema
-    const response = await fetch(
-      `[https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$](https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$){apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: {
-            responseMimeType: "application/json",
-            responseSchema: {
-              type: "ARRAY",
-              items: {
-                type: "OBJECT",
-                properties: {
-                  name: { type: "STRING" },
-                  location: { type: "STRING" },
-                  matchScore: { type: "NUMBER" },
-                  category: { type: "STRING" },
-                  scholarshipName: { type: "STRING" },
-                  coverage: { type: "STRING" },
-                  program: { type: "STRING" },
-                  deadline: { type: "STRING" },
-                  officialWebsite: { type: "STRING" },
-                },
-                required: [
-                  "name",
-                  "location",
-                  "matchScore",
-                  "category",
-                  "scholarshipName",
-                  "coverage",
-                  "program",
-                  "deadline",
-                  "officialWebsite",
-                ],
+    // Template literal backtick (`) bilan to'g'rilangan URL
+    const apiUrl = `[https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$](https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$){apiKey}`;
+
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: "ARRAY",
+            items: {
+              type: "OBJECT",
+              properties: {
+                name: { type: "STRING" },
+                location: { type: "STRING" },
+                matchScore: { type: "NUMBER" },
+                category: { type: "STRING" },
+                scholarshipName: { type: "STRING" },
+                coverage: { type: "STRING" },
+                program: { type: "STRING" },
+                deadline: { type: "STRING" },
+                officialWebsite: { type: "STRING" },
               },
+              required: [
+                "name",
+                "location",
+                "matchScore",
+                "category",
+                "scholarshipName",
+                "coverage",
+                "program",
+                "deadline",
+                "officialWebsite",
+              ],
             },
           },
-        }),
-      }
-    );
+        },
+      }),
+    });
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error("Gemini API Error details:", JSON.stringify(errorData, null, 2));
+      console.error("Gemini API Request Failed:", JSON.stringify(errorData, null, 2));
+      
       return NextResponse.json(
         { 
           success: false, 
@@ -87,14 +87,14 @@ export async function POST(req: Request) {
     const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!rawText) {
-      throw new Error("No response text received from Gemini.");
+      throw new Error("No output generated from AI model.");
     }
 
     const universities = JSON.parse(rawText);
 
     return NextResponse.json({ success: true, universities });
   } catch (error: any) {
-    console.error("AI Recommend Route Catch Error:", error);
+    console.error("AI Recommend Route Error:", error);
     return NextResponse.json(
       { success: false, error: error?.message || "Failed to generate recommendations." },
       { status: 500 }
