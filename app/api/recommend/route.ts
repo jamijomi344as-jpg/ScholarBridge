@@ -13,7 +13,7 @@ export async function POST(req: Request) {
   try {
     if (!apiKey) {
       return NextResponse.json(
-        { success: false, error: "Serverda GEMINI_API_KEY sozlanmagan (.env.local yoki Render Environment)." },
+        { success: false, error: "Serverda GEMINI_API_KEY sozlanmagan." },
         { status: 500 }
       );
     }
@@ -21,7 +21,6 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { country, gpa, sat, ielts, majors, targetCountries, budget } = body;
 
-    // Frontend ma'lumotlaridan prompt yasash
     const generatedPrompt = `
       Act as an expert international university admissions AI advisor.
       Analyze the following student profile:
@@ -36,9 +35,9 @@ export async function POST(req: Request) {
       Return top 4-5 matching real universities based on this profile.
     `;
 
-    // Model initsializatsiyasi va structured JSON schema
+    // ✅ Model nomi rasmiy "gemini-1.5-flash" ga to'g'rilandi
     const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash-latest",
+      model: "gemini-1.5-flash",
       generationConfig: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -81,7 +80,6 @@ export async function POST(req: Request) {
 
     const universities = JSON.parse(responseText);
 
-    // Frontend kutilayotgan format: { success: true, universities: [...] }
     return NextResponse.json({ success: true, universities });
 
   } catch (error: any) {
