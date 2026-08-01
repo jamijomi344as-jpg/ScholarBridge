@@ -3,6 +3,8 @@
 import React from "react";
 
 export default function Home() {
+  const findUrl = "https://scholarbridge-gjlm.onrender.com/find";
+
   return (
     <div
       style={{
@@ -356,6 +358,8 @@ export default function Home() {
           opacity: 0;
           animation: fadeIn 0.4s ease forwards;
           animation-delay: 2.1s;
+          display: inline-block;
+          text-align: center;
         }
         .db-results {
           padding: 20px;
@@ -956,7 +960,7 @@ export default function Home() {
             <a href="#features" className="nav-link">
               Features
             </a>
-            <a href="#start" className="nav-btn">
+            <a href={findUrl} className="nav-btn">
               Get matched →
             </a>
           </div>
@@ -977,7 +981,7 @@ export default function Home() {
           and deadlines attached.
         </p>
         <div className="hero-ctas">
-          <a href="#start" className="btn-main">
+          <a href={findUrl} className="btn-main">
             Start your match
             <svg viewBox="0 0 18 18" fill="none">
               <path
@@ -1023,7 +1027,9 @@ export default function Home() {
                 <div className="pf-label">Major</div>
                 <div className="pf-val">Comp. Science</div>
               </div>
-              <button className="match-btn">Find my matches →</button>
+              <a href={findUrl} className="match-btn">
+                Find my matches →
+              </a>
             </div>
             <div className="db-results">
               <div className="db-results-head">AI Matches — 5 found</div>
@@ -1275,7 +1281,7 @@ export default function Home() {
               Built by a student tired of guessing. Designed for students
               everywhere.
             </p>
-            <a href="#" className="btn-light">
+            <a href={findUrl} className="btn-light">
               Start your match
               <svg viewBox="0 0 18 18" fill="none">
                 <path
