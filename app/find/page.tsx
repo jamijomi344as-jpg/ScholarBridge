@@ -110,21 +110,26 @@ export default function FindPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...formData,
+          country: formData.country,
+          gpa: formData.gpa,
+          sat: formData.sat,
+          ielts: formData.ielts,
+          budget: formData.budget,
           majors: selectedMajors,
           targetCountries: targetCountries,
         }),
       });
 
       const data = await res.json();
-      if (data.success) {
+
+      if (res.ok && data.success) {
         setUniversities(data.universities);
       } else {
-        setErrorMsg("AI qidiruvda xatolik yuz berdi. Dasturni qayta urinib ko'ring.");
+        setErrorMsg(data.error || "AI qidiruvda xatolik yuz berdi.");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setErrorMsg("Server bilan bog'lanishda xatolik bo'ldi.");
+      setErrorMsg("Server bilan bog'lanishda xatolik bo'ldi. Tarmoqni tekshiring.");
     } finally {
       setLoading(false);
     }
@@ -406,7 +411,7 @@ export default function FindPage() {
                       >
                         {uni.matchScore}% Match
                       </div>
-                      <span className={`uni-tag ${uni.category.toLowerCase()}`}>
+                      <span className={`uni-tag ${(uni.category || "target").toLowerCase()}`}>
                         {uni.category} University
                       </span>
                     </div>
