@@ -10,7 +10,7 @@ export default function Home() {
             <span style={{ width: '30px', height: '30px', borderRadius: '50%', backgroundColor: '#16233F', color: '#D9BE7E', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.72rem', fontWeight: 500 }}>SB</span>
             ScholarBridge
           </div>
-          <Link href="/match" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.92rem', backgroundColor: '#16233F', color: '#F6F4EC', padding: '11px 22px', borderRadius: '3px', textDecoration: 'none', border: 'none', cursor: 'pointer', transition: 'background .18s ease, transform .18s ease' }}>
+          <Link href="/find" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.92rem', backgroundColor: '#16233F', color: '#F6F4EC', padding: '11px 22px', borderRadius: '3px', textDecoration: 'none', border: 'none', cursor: 'pointer', transition: 'background .18s ease, transform .18s ease' }}>
             Get matched
           </Link>
         </div>
@@ -29,7 +29,7 @@ export default function Home() {
             Tell us your grades, your scores, your budget. We match you against real admission patterns and surface the scholarships worth your time — before the deadline does.
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
-            <Link href="/match" style={{ backgroundColor: '#16233F', color: '#F6F4EC', fontWeight: 600, fontSize: '0.98rem', padding: '15px 28px', borderRadius: '3px', border: 'none', cursor: 'pointer', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
+            <Link href="/find" style={{ backgroundColor: '#16233F', color: '#F6F4EC', fontWeight: 600, fontSize: '0.98rem', padding: '15px 28px', borderRadius: '3px', border: 'none', cursor: 'pointer', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
               Start your match
               <svg viewBox="0 0 16 16" fill="none" style={{ width: '16px', height: '16px' }}>
                 <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
@@ -54,7 +54,7 @@ export default function Home() {
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', paddingBottom: '11px', borderBottom: '1px solid rgba(255,255,255,0.10)', fontSize: '0.92rem' }}>
               <span style={{ color: 'rgba(246,244,236,0.55)', fontSize: '0.82rem' }}>IELTS</span>
-              <span style={{ color: '#F6F4EC', fontFamily: "'IBM Plex Mono', monospace", fontWeight: 500 }}>7.5 Overall</span>
+              <span style={{ color: '#F6F4EC', fontFamily: "'IBM Plex Mono', monospace", fontWeight 500 }}>7.5 Overall</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', paddingBottom: '11px', borderBottom: '1px solid rgba(255,255,255,0.10)', fontSize: '0.92rem' }}>
               <span style={{ color: 'rgba(246,244,236,0.55)', fontSize: '0.82rem' }}>Intended major</span>
@@ -141,7 +141,7 @@ export default function Home() {
         <div style={{ maxWidth: '1180px', margin: '0 auto', padding: '0 32px' }}>
           <h2 style={{ fontFamily: "'Source Serif 4', serif", fontWeight: 600, fontSize: '2.35rem', color: '#16233F', maxWidth: '20ch', margin: '0 auto 18px' }}>Your shortlist is three fields away.</h2>
           <p style={{ color: '#5B584E', maxWidth: '46ch', margin: '0 auto 34px', fontSize: '1.02rem' }}>No cost to see your matches. Built by a student who was tired of guessing too.</p>
-          <Link href="/match" style={{ backgroundColor: '#16233F', color: '#F6F4EC', fontWeight: 600, fontSize: '0.98rem', padding: '15px 28px', borderRadius: '3px', border: 'none', cursor: 'pointer', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
+          <Link href="/find" style={{ backgroundColor: '#16233F', color: '#F6F4EC', fontWeight: 600, fontSize: '0.98rem', padding: '15px 28px', borderRadius: '3px', border: 'none', cursor: 'pointer', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
             Start your match
             <svg viewBox="0 0 16 16" fill="none" style={{ width: '16px', height: '16px' }}>
               <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
