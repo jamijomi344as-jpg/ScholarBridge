@@ -106,7 +106,8 @@ export default function FindPage() {
     setErrorMsg("");
 
     try {
-      const res = await fetch("/api/match", {
+      // FIX: /api/match o'rniga /api/recommend deb to'g'rilandi
+      const res = await fetch("/api/recommend", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
