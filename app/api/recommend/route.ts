@@ -55,8 +55,6 @@ export async function POST(req: Request) {
     );
 
     if (!response.ok) {
-      const errData = await response.text();
-      console.error("Gemini API Error Response:", errData);
       return NextResponse.json(
         { success: false, error: "AI API request failed." },
         { status: response.status }
@@ -66,16 +64,16 @@ export async function POST(req: Request) {
     const data = await response.json();
     let rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "[]";
     
-    // Markdown formatlarini tozalash
+    // Markdown teglarni tozalash
     rawText = rawText.replace(/```json/gi, "").replace(/```/g, "").trim();
 
     const universities = JSON.parse(rawText);
 
     return NextResponse.json({ success: true, universities });
   } catch (error: any) {
-    console.error("AI Match Route Error:", error);
+    console.error("AI Recommend Route Error:", error);
     return NextResponse.json(
-      { success: false, error: error?.message || "Failed to generate matches from AI." },
+      { success: false, error: error?.message || "Failed to generate recommendations." },
       { status: 500 }
     );
   }
