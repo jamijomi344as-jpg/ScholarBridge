@@ -3,18 +3,19 @@ import time
 import asyncio
 import subprocess
 import requests
+from dotenv import load_dotenv
 from google import genai
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 
-# =============================================================
-# BARCHA SOZLAMALAR VA KALITLAR:
-# =============================================================
-TELEGRAM_BOT_TOKEN = "8249581484:AAFTw0xpAxr_e_NXyMxcLyrIBO6QLjV3fPs"
-GEMINI_API_KEY = "AQ.Ab8RN6I4ETzpGnHRFvOOQs5E9qjelquLIZXVCV5fXM-FDRcCfA"
-RENDER_API_KEY = "rnd_T6pNHtaDvhZ43AQd3MhQAxyXw8u6"
-RENDER_SERVICE_ID = "srv-d9leebnlk1mc738kc9e0"
-SITE_URL = "https://scholarbridge-gjlm.onrender.com/"
+# .env faylidagi kalitlarni yuklash
+load_dotenv()
+
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+RENDER_API_KEY = os.getenv("RENDER_API_KEY")
+RENDER_SERVICE_ID = os.getenv("RENDER_SERVICE_ID")
+SITE_URL = os.getenv("SITE_URL")
 
 gemini_client = genai.Client(api_key=GEMINI_API_KEY)
 
@@ -98,9 +99,8 @@ async def start_process(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     # 1. Git pull va push jarayoni
     try:
-        subprocess.run(["git", "pull", "origin", "main", "--rebase"], check=False)
         subprocess.run(["git", "add", "."], check=False)
-        subprocess.run(["git", "commit", "-m", "Auto deployment cycle"], check=False)
+        subprocess.run(["git", "commit", "-m", "Security fix: moved secrets to env"], check=False)
         subprocess.run(["git", "push", "-u", "origin", "main"], check=False)
         await context.bot.send_message(chat_id=chat_id, text="📤 Kod holati GitHub bilan tenglashtirildi.")
     except Exception as e:
