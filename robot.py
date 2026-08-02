@@ -83,7 +83,7 @@ def get_render_status():
         "Authorization": f"Bearer {RENDER_API_KEY}",
         "Accept": "application/json"
     }
-    url = f"[https://api.render.com/v1/services/](https://api.render.com/v1/services/){RENDER_SERVICE_ID}/deploys?limit=1"
+    url = f"https://api.render.com/v1/services/{RENDER_SERVICE_ID}/deploys?limit=1"
     
     try:
         response = requests.get(url, headers=headers)
@@ -105,7 +105,7 @@ def get_render_status():
             return "live", None
         elif status in ["build_failed", "update_failed"]:
             deploy_id = latest.get('id')
-            logs_url = f"[https://api.render.com/v1/services/](https://api.render.com/v1/services/){RENDER_SERVICE_ID}/deploys/{deploy_id}/logs"
+            logs_url = f"https://api.render.com/v1/services/{RENDER_SERVICE_ID}/deploys/{deploy_id}/logs"
             logs = requests.get(logs_url, headers=headers).text
             return "failed", logs
     except Exception as e:
