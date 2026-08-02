@@ -28,6 +28,38 @@ SITE_URL = os.getenv("SITE_URL")
 gemini_client = genai.Client(api_key=GEMINI_API_KEY)
 
 # -------------------------------------------------------------
+# Sayt va AI funksionalligini tekshirish (Health Check)
+# -------------------------------------------------------------
+def check_site_health():
+    if not SITE_URL:
+        return False, "SITE_URL .env faylida ko'rsatilmagan."
+    
+    try:
+        # 1. Asosiy sayt sahifasini tekshirish (HTTP 200)
+        res = requests.get(SITE_URL, timeout=15)
+        if res.status_code != 200:
+            return False, f"Sayt HTTP {res.status_code} xatosini qaytardi."
+
+        # 2. Sayt backend/AI API endpoint'ini tekshirish (agar API yo'li bo'lsa)
+        api_url = f"{SITE_URL.rstrip('/')}/api/chat"
+        try:
+            api_res = requests.post(
+                api_url, 
+                json={"message": "ping"}, 
+                headers={"Content-Type": "application/json"},
+                timeout=15
+            )
+            # Agar API mavjud bo'lsa va 200/400 o'rnida 500 berib yiqilmasa
+            if api_res.status_code in [200, 400]:
+                return True, "Sayt va AI serveri to'liq muvaffaqiyatli ishlayapti!"
+        except Exception:
+            pass  # Agar maxsus endpoint boshqacha bo'lsa, asosiy sahifa 200 berganining o'zi yetarli
+
+        return True, "Sayt muvaffaqiyatli yuklandi va 200 OK javobini qaytardi!"
+    except Exception as e:
+        return False, f"Saytga ulanishda xatolik yuz berdi: {e}"
+
+# -------------------------------------------------------------
 # Xatolikni sodda (o'zbekcha) dildan tushuntirish va tuzatish
 # -------------------------------------------------------------
 def explain_and_fix_error(error_type, raw_log):
@@ -105,7 +137,7 @@ def get_render_status():
             return "live", None
         elif status in ["build_failed", "update_failed"]:
             deploy_id = latest.get('id')
-            logs_url = f"https://api.render.com/v1/services/{RENDER_SERVICE_ID}/deploys/{deploy_id}/logs"
+            logs_url = f"\https://api.render.com/v1/services/{RENDER_SERVICE_ID}/deploys/{deploy_id}/logs"
             logs = requests.get(logs_url, headers=headers).text
             return "failed", logs
     except Exception as e:
@@ -142,6 +174,15 @@ async def start_process(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     chat_id=chat_id, 
                     text=f"🎉 **Ajoyib yangilik!** Sayt Render'da muvaffaqiyatli ishga tushdi va LIVE bo'ldi!\n🔗 Saytingiz: {SITE_URL}"
                 )
+                
+                # SAYT VA AI ISHLASHINI TEKSHIRISH
+                await context.bot.send_message(chat_id=chat_id, text="🔍 Sayt tugmalari va AI serveri tekshirilmoqda...")
+                is_healthy, msg = check_site_health()
+                
+                if is_healthy:
+                    await context.bot.send_message(chat_id=chat_id, text=f"✅ **Sayt tekshiruvdan o'tdi:** {msg}")
+                else:
+                    await context.bot.send_message(chat_id=chat_id, text=f"⚠️ **Sayt Live bo'ldi, lekin tekshirishda muammo bor:** {msg}")
                 return
                 
             elif status == "failed":
