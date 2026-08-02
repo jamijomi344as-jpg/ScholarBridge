@@ -8,7 +8,7 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 
 # =============================================================
-# BARCHA MA'LUMOTLARINGIZ SHU YERDA:
+# BARCHA SOZLAMALAR VA KALITLAR:
 # =============================================================
 TELEGRAM_BOT_TOKEN = "8249581484:AAFTw0xpAxr_e_NXyMxcLyrIBO6QLjV3fPs"
 GEMINI_API_KEY = "AQ.Ab8RN6I4ETzpGnHRFvOOQs5E9qjelquLIZXVCV5fXM-FDRcCfA"
@@ -90,20 +90,20 @@ def get_render_status():
     return "building", None
 
 # -------------------------------------------------------------
-# Asosiy jarayon (Moslashtirilgan Git buyruqlari bilan)
+# Asosiy jarayon
 # -------------------------------------------------------------
 async def start_process(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     await context.bot.send_message(chat_id=chat_id, text="👋 **Salom! Men sizning avtonom yordamchingizman.**\n\nJarayonni boshladim: Kodni GitHub'ga joylayman va Render'ni kuzataman.")
     
-    # 1. Git push (O'zgarish bor-yo'qligini xavfsiz tekshirish)
+    # 1. Git push (Xavfsiz va xatosiz bajarish)
     try:
         subprocess.run(["git", "add", "."], check=False)
         subprocess.run(["git", "commit", "-m", "Auto deployment cycle"], check=False)
-        subprocess.run(["git", "push"], check=False)
+        subprocess.run(["git", "push", "-u", "origin", "main"], check=False)
         await context.bot.send_message(chat_id=chat_id, text="📤 Kod holati GitHub bilan tenglashtirildi.")
     except Exception as e:
-        await context.bot.send_message(chat_id=chat_id, text=f"⚠️ Git jarayonida xatolik bo'ldi: {e}")
+        await context.bot.send_message(chat_id=chat_id, text=f"⚠️ Git jarayonida ogohlantirish: {e}")
 
     # 2. Render kuzatish sikli
     for attempt in range(1, 6):
@@ -133,7 +133,7 @@ async def start_process(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 
                 subprocess.run(["git", "add", "."], check=False)
                 subprocess.run(["git", "commit", "-m", f"Auto-fix attempt #{attempt}"], check=False)
-                subprocess.run(["git", "push"], check=False)
+                subprocess.run(["git", "push", "-u", "origin", "main"], check=False)
                 break
 
 def main():
