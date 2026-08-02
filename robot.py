@@ -96,8 +96,9 @@ async def start_process(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     await context.bot.send_message(chat_id=chat_id, text="👋 **Salom! Men sizning avtonom yordamchingizman.**\n\nJarayonni boshladim: Kodni GitHub'ga joylayman va Render'ni kuzataman.")
     
-    # 1. Git push (Xavfsiz va xatosiz bajarish)
+    # 1. Git pull va push jarayoni
     try:
+        subprocess.run(["git", "pull", "origin", "main", "--rebase"], check=False)
         subprocess.run(["git", "add", "."], check=False)
         subprocess.run(["git", "commit", "-m", "Auto deployment cycle"], check=False)
         subprocess.run(["git", "push", "-u", "origin", "main"], check=False)
