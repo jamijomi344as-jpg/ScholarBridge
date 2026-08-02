@@ -3,13 +3,21 @@ import time
 import asyncio
 import subprocess
 import requests
-from dotenv import load_dotenv
 from google import genai
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 
-# .env faylidagi kalitlarni yuklash
-load_dotenv()
+# Standard Python orqali .env faylini o'qish (python-dotenv shart emas)
+def load_env_file(filepath=".env"):
+    if os.path.exists(filepath):
+        with open(filepath, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    key, value = line.split("=", 1)
+                    os.environ[key.strip()] = value.strip()
+
+load_env_file()
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -100,7 +108,7 @@ async def start_process(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # 1. Git pull va push jarayoni
     try:
         subprocess.run(["git", "add", "."], check=False)
-        subprocess.run(["git", "commit", "-m", "Security fix: moved secrets to env"], check=False)
+        subprocess.run(["git", "commit", "-m", "Auto deployment cycle update"], check=False)
         subprocess.run(["git", "push", "-u", "origin", "main"], check=False)
         await context.bot.send_message(chat_id=chat_id, text="📤 Kod holati GitHub bilan tenglashtirildi.")
     except Exception as e:
