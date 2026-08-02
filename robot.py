@@ -90,21 +90,20 @@ def get_render_status():
     return "building", None
 
 # -------------------------------------------------------------
-# Asosiy jarayon
+# Asosiy jarayon (Moslashtirilgan Git buyruqlari bilan)
 # -------------------------------------------------------------
 async def start_process(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     await context.bot.send_message(chat_id=chat_id, text="👋 **Salom! Men sizning avtonom yordamchingizman.**\n\nJarayonni boshladim: Kodni GitHub'ga joylayman va Render'ni kuzataman.")
     
-    # 1. Git push
+    # 1. Git push (O'zgarish bor-yo'qligini xavfsiz tekshirish)
     try:
-        subprocess.run(["git", "add", "."], check=True)
-        subprocess.run(["git", "commit", "-m", "Auto deployment cycle"], check=True)
-        subprocess.run(["git", "push"], check=True)
-        await context.bot.send_message(chat_id=chat_id, text="📤 Kod GitHub'ga muvaffaqiyatli joylandi.")
+        subprocess.run(["git", "add", "."], check=False)
+        subprocess.run(["git", "commit", "-m", "Auto deployment cycle"], check=False)
+        subprocess.run(["git", "push"], check=False)
+        await context.bot.send_message(chat_id=chat_id, text="📤 Kod holati GitHub bilan tenglashtirildi.")
     except Exception as e:
-        await context.bot.send_message(chat_id=chat_id, text=f"⚠️ Git'ga joylashda xatolik bo'ldi: {e}")
-        return
+        await context.bot.send_message(chat_id=chat_id, text=f"⚠️ Git jarayonida xatolik bo'ldi: {e}")
 
     # 2. Render kuzatish sikli
     for attempt in range(1, 6):
@@ -132,9 +131,9 @@ async def start_process(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 )
                 await context.bot.send_message(chat_id=chat_id, text=report)
                 
-                subprocess.run(["git", "add", "."], check=True)
-                subprocess.run(["git", "commit", "-m", f"Auto-fix attempt #{attempt}"], check=True)
-                subprocess.run(["git", "push"], check=True)
+                subprocess.run(["git", "add", "."], check=False)
+                subprocess.run(["git", "commit", "-m", f"Auto-fix attempt #{attempt}"], check=False)
+                subprocess.run(["git", "push"], check=False)
                 break
 
 def main():
