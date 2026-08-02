@@ -7,7 +7,7 @@ from google import genai
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 
-# Standard Python orqali .env faylini o'qish (python-dotenv shart emas)
+# Standard Python orqali .env faylini o'qish
 def load_env_file(filepath=".env"):
     if os.path.exists(filepath):
         with open(filepath, "r", encoding="utf-8") as f:
@@ -62,14 +62,18 @@ def explain_and_fix_error(error_type, raw_log):
     )
     
     res_text = response.text
-    explanation = res_text.split("---IZOH---")[1].split("---KOD---")[0].strip()
-    fixed_code = res_text.split("---KOD---")[1].replace("```python", "").replace("```javascript", "").replace("```", "").strip()
+    
+    if "---IZOH---" in res_text and "---KOD---" in res_text:
+        explanation = res_text.split("---IZOH---")[1].split("---KOD---")[0].strip()
+        fixed_code = res_text.split("---KOD---")[1].replace("```python", "").replace("```javascript", "").replace("```", "").strip()
 
-    if os.path.exists(main_file):
-        with open(main_file, "w", encoding="utf-8") as f:
-            f.write(fixed_code)
+        if os.path.exists(main_file):
+            with open(main_file, "w", encoding="utf-8") as f:
+                f.write(fixed_code)
 
-    return explanation
+        return explanation
+    else:
+        return "Xatolik aniqlandi, lekin javob formati kutilganidek bo'lmadi. Qayta urinib ko'riladi."
 
 # -------------------------------------------------------------
 # Render statusini tekshirish
