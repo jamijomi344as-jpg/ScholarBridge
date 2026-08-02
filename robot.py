@@ -76,24 +76,35 @@ def explain_and_fix_error(error_type, raw_log):
         return "Xatolik aniqlandi, lekin javob formati kutilganidek bo'lmadi. Qayta urinib ko'riladi."
 
 # -------------------------------------------------------------
-# Render statusini tekshirish
+# Render statusini tekshirish (Xatoliklarni tekshirish bilan)
 # -------------------------------------------------------------
 def get_render_status():
-    headers = {"Authorization": f"Bearer {RENDER_API_KEY}"}
+    headers = {
+        "Authorization": f"Bearer {RENDER_API_KEY}",
+        "Accept": "application/json"
+    }
     url = f"[https://api.render.com/v1/services/](https://api.render.com/v1/services/){RENDER_SERVICE_ID}/deploys?limit=1"
     
     try:
-        res = requests.get(url, headers=headers).json()
+        response = requests.get(url, headers=headers)
+        if response.status_code == 401:
+            print("❌ Render API Key xato yoki yaroqsiz!")
+            return "error", "API key unauthorized"
+        elif response.status_code == 404:
+            print("❌ RENDER_SERVICE_ID topilmadi!")
+            return "error", "Service ID not found"
+        
+        res = response.json()
         if not res or not isinstance(res, list):
             return "building", None
             
-        latest = res[0]['deploy']
-        status = latest['status']
+        latest = res[0].get('deploy', {})
+        status = latest.get('status')
         
         if status == "live":
             return "live", None
         elif status in ["build_failed", "update_failed"]:
-            deploy_id = latest['id']
+            deploy_id = latest.get('id')
             logs_url = f"[https://api.render.com/v1/services/](https://api.render.com/v1/services/){RENDER_SERVICE_ID}/deploys/{deploy_id}/logs"
             logs = requests.get(logs_url, headers=headers).text
             return "failed", logs
