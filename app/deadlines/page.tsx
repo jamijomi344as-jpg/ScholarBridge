@@ -1,4 +1,4 @@
-export default function DeadlinesPage() {
+
   return (
     <main>
       <section className="section">
