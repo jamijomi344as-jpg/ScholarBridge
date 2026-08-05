@@ -1,0 +1,19 @@
+name: Trigger n8n Agent on Deploy
+
+on:
+  push:
+    branches:
+      - main  # Agar sizda branch nomi 'master' bo'lsa, 'master' deb o'zgartiring
+
+jobs:
+  notify-n8n:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for Render deploy to finish
+        run: sleep 60
+
+      - name: Call n8n Webhook
+        run: |
+          curl -X POST https://hushnudsagent.app.n8n.cloud/webhook/render-deploy \
+               -H "Content-Type: application/json" \
+               -d '{"event": "deploy_success", "source": "github_actions"}'
